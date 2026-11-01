@@ -237,6 +237,6 @@ Defined in `backend/prisma/schema.prisma`:
 
 ## Team
 
+- Nikko T. Delos Santos
 - Mark Angelo L. Florencio
 - Niño Kriebel C. Olmo
-- Nikko T. Delos Santos
