@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import express, { Request, Response } from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import bcrypt from 'bcrypt';
 import { Prisma } from '@prisma/client';
@@ -460,6 +460,136 @@ app.get('/api/orders', async (req: Request, res: Response) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch orders' });
+  }
+});
+
+const ORDER_STATUSES = ['PENDING', 'PAID', 'SHIPPED', 'DELIVERED', 'CANCELLED'] as const;
+type OrderStatusValue = (typeof ORDER_STATUSES)[number];
+const LOW_STOCK_THRESHOLD = 5;
+
+// The storefront has no login yet, so the dashboard sends the admin's email and password
+// in headers on every request and we check them here against the database.
+const requireAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  const email = req.header('x-admin-email');
+  const password = req.header('x-admin-password');
+
+  if (!email || !password) {
+    res.status(401).json({ error: 'Admin login required' });
+    return;
+  }
+
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+    const match = user ? await bcrypt.compare(password, user.passwordHash) : false;
+
+    if (!user || !match) {
+      res.status(401).json({ error: 'Invalid email or password' });
+      return;
+    }
+    if (!user.isAdmin) {
+      res.status(403).json({ error: 'This account is not an admin' });
+      return;
+    }
+
+    next();
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to verify admin' });
+  }
+};
+
+// Lets the dashboard check a login before loading any data.
+app.get('/api/admin/me', requireAdmin, (_req: Request, res: Response) => {
+  res.json({ ok: true });
+});
+
+// All customer orders, newest first.
+app.get('/api/admin/orders', requireAdmin, async (_req: Request, res: Response) => {
+  try {
+    const orders = await prisma.orders.findMany({
+      include: orderInclude,
+      orderBy: { id: 'desc' },
+    });
+    res.json(orders.map(serializeOrder));
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch orders' });
+  }
+});
+
+// Change an order's fulfillment status.
+// Cancelling puts the ordered items back into stock, in the same transaction.
+app.patch('/api/admin/orders/:id/status', requireAdmin, async (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+  const { status } = req.body as { status?: string };
+
+  if (!Number.isInteger(id) || id <= 0) {
+    res.status(400).json({ error: 'Order id must be a valid number' });
+    return;
+  }
+  if (!status || !ORDER_STATUSES.includes(status as OrderStatusValue)) {
+    res.status(400).json({ error: `status must be one of: ${ORDER_STATUSES.join(', ')}` });
+    return;
+  }
+  const nextStatus = status as OrderStatusValue;
+
+  try {
+    const updated = await prisma.$transaction(async (tx) => {
+      const order = await tx.orders.findUnique({ where: { id }, include: orderInclude });
+
+      if (!order) {
+        throw new OrderError(404, 'Order not found');
+      }
+      if (order.status === 'CANCELLED') {
+        throw new OrderError(409, 'A cancelled order cannot be changed');
+      }
+
+      if (nextStatus === 'CANCELLED') {
+        if (order.status === 'DELIVERED') {
+          throw new OrderError(409, 'A delivered order cannot be cancelled');
+        }
+        for (const item of order.order_items) {
+          if (item.product_id != null) {
+            await tx.product.update({
+              where: { id: item.product_id },
+              data: { stockQuantity: { increment: item.quantity } },
+            });
+          }
+        }
+      }
+
+      return tx.orders.update({
+        where: { id },
+        data: { status: nextStatus },
+        include: orderInclude,
+      });
+    });
+
+    res.json(serializeOrder(updated));
+  } catch (error) {
+    if (error instanceof OrderError) {
+      res.status(error.status).json({ error: error.message });
+      return;
+    }
+    console.error(error);
+    res.status(500).json({ error: 'Failed to update order status' });
+  }
+});
+
+// Products at or below the threshold (default 5), lowest stock first.
+app.get('/api/admin/low-stock', requireAdmin, async (req: Request, res: Response) => {
+  const requested = Number(req.query.threshold);
+  const threshold = Number.isInteger(requested) && requested >= 0 ? requested : LOW_STOCK_THRESHOLD;
+
+  try {
+    const products = await prisma.product.findMany({
+      where: { stockQuantity: { lte: threshold } },
+      orderBy: [{ stockQuantity: 'asc' }, { id: 'asc' }],
+    });
+    res.json(products.map(serializeProduct));
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch low-stock products' });
   }
 });
 

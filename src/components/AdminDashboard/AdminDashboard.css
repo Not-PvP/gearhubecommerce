@@ -1,0 +1,345 @@
+/* Uses the same theme variables as the rest of the storefront (--surface-1, --red, ...) */
+
+.admin {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+  color: var(--text);
+}
+
+.admin h1,
+.admin h2 {
+  margin: 0;
+  color: var(--text);
+}
+
+.admin h1 {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.admin h2 {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.admin small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-subtle);
+}
+
+/* ---------- header ---------- */
+
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+  border-bottom: 3px solid var(--red);
+}
+
+.admin-header__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.admin-btn:hover:not(:disabled) {
+  border-color: var(--red);
+}
+
+.admin-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-btn:focus-visible,
+.admin select:focus-visible,
+.admin input:focus-visible,
+.admin-link:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+.admin-btn--primary {
+  justify-content: center;
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+}
+
+/* ---------- summary ---------- */
+
+.admin-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.admin-stat {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.admin-stat strong {
+  display: block;
+  font-size: 26px;
+  line-height: 1.1;
+}
+
+.admin-stat span {
+  font-size: 12px;
+  color: var(--text-subtle);
+}
+
+.admin-stat--alert {
+  border-color: var(--red);
+}
+
+/* ---------- layout ---------- */
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 20px;
+  align-items: start;
+}
+
+.admin-panel {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.admin-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.admin-panel__hint {
+  font-size: 12px;
+  color: var(--text-subtle);
+}
+
+.admin-empty {
+  margin: 0;
+  padding: 24px 8px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-subtle);
+}
+
+.admin-error {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  background: rgba(244, 67, 54, 0.12);
+  border: 1px solid rgba(244, 67, 54, 0.4);
+  border-radius: 8px;
+  color: #ef5350;
+  font-size: 13px;
+}
+
+/* ---------- filter + selects ---------- */
+
+.admin-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-subtle);
+}
+
+.admin select {
+  padding: 7px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.admin select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ---------- orders table ---------- */
+
+.admin-table-wrap {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.admin-table th {
+  text-align: left;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-subtle);
+  border-bottom: 1px solid var(--border-strong, var(--border));
+  white-space: nowrap;
+}
+
+.admin-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-table__items {
+  min-width: 200px;
+  max-width: 320px;
+}
+
+/* status colours match OrderHistory */
+
+.admin select.admin-status--pending   { color: #ffc107; background: rgba(255, 193, 7, 0.15); }
+.admin select.admin-status--paid      { color: #42a5f5; background: rgba(33, 150, 243, 0.15); }
+.admin select.admin-status--shipped   { color: #7986cb; background: rgba(63, 81, 181, 0.15); }
+.admin select.admin-status--delivered { color: #66bb6a; background: rgba(76, 175, 80, 0.15); }
+.admin select.admin-status--cancelled { color: #ef5350; background: rgba(244, 67, 54, 0.15); }
+
+.admin .admin-status {
+  border-color: transparent;
+}
+
+/* ---------- low stock ---------- */
+
+.admin-stock {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-stock li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.admin-stock__name {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.admin-stock__badge {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffc107;
+  background: rgba(255, 193, 7, 0.15);
+}
+
+.admin-stock__badge--out {
+  color: #ef5350;
+  background: rgba(244, 67, 54, 0.15);
+}
+
+/* ---------- sign in ---------- */
+
+.admin--login {
+  display: flex;
+  justify-content: center;
+  padding-top: 8vh;
+}
+
+.admin-login {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-top: 5px solid var(--red);
+  border-radius: 12px;
+}
+
+.admin-login__note {
+  margin: -6px 0 0;
+  font-size: 13px;
+  color: var(--text-subtle);
+}
+
+.admin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-subtle);
+}
+
+.admin-field input {
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.admin-link {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-subtle);
+}
+
+/* ---------- small screens ---------- */
+
+@media (max-width: 960px) {
+  .admin-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

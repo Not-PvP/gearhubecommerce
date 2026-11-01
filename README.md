@@ -90,6 +90,44 @@ cd backend
 npx prisma studio           # opens http://localhost:5555
 ```
 
+## Admin dashboard
+
+Admins can view all orders, update their status, and monitor low-stock products.
+
+Open http://localhost:3000/#/admin and sign in with an admin account.
+
+### Create an admin account
+
+Accounts live in your own local database, so each person creates their own. With the backend running:
+
+1. Register an account (PowerShell):
+
+   ```powershell
+   Invoke-RestMethod -Method Post -Uri http://localhost:5000/api/users/register -ContentType "application/json" -Body '{"email":"admin@gearhub.com","password":"admin1234"}'
+   ```
+
+2. Mark it as admin. From `backend/`, run `npx prisma studio`, open the `users` table, set `isAdmin` to `true` for that user, and click **Save**.
+
+3. Sign in at `/#/admin`. You can use your own email and password instead of the example above.
+
+### What it does
+
+- Lists all orders with a status filter.
+- Changes an order's status: PENDING, PAID, SHIPPED, DELIVERED or CANCELLED.
+- Cancelling an order returns its items to stock. Cancelled orders can't be changed, and delivered orders can't be cancelled.
+- Shows products with 5 or fewer left in stock.
+
+### Admin endpoints
+
+These need the headers `x-admin-email` and `x-admin-password`. They return 401 for wrong credentials and 403 if the account isn't an admin.
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/api/admin/me` | Checks the admin login |
+| GET | `/api/admin/orders` | All orders, newest first |
+| PATCH | `/api/admin/orders/:id/status` | Updates an order's status. Body: `{ "status": "SHIPPED" }` |
+| GET | `/api/admin/low-stock?threshold=5` | Products at or below the threshold |
+
 ## Useful backend scripts
 
 Run these from `backend/`.
