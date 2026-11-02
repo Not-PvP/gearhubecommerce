@@ -1,37 +1,22 @@
 .product-grid {
   width: 100%;
-  margin: 16px auto 0;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  justify-content: center;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 20px;
-  padding: 0 4px 40px;
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 720px) {
   .product-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
   }
 }
-
-@media (max-width: 960px) {
-  .product-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 520px) {
-  .product-grid {
-    grid-template-columns: 1fr;
-  }
-}
-/* loading and error states */
 
 .product-grid__skeleton {
-  aspect-ratio: 1 / 1.75;
-  border-radius: 14px;
-  border: 1.5px solid var(--border);
-  background: linear-gradient(100deg, var(--surface-1) 40%, var(--surface-2) 50%, var(--surface-1) 60%);
+  aspect-ratio: 1 / 1.5;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: linear-gradient(100deg, var(--surface-1) 40%, var(--surface-3) 50%, var(--surface-1) 60%);
   background-size: 200% 100%;
   animation: product-grid-shimmer 1.4s linear infinite;
 }
@@ -42,52 +27,45 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .product-grid__skeleton {
-    animation: none;
-  }
-}
-
-.product-grid__status {
+.product-grid__status,
+.product-grid__empty {
   margin: 48px auto 80px;
   max-width: 420px;
   text-align: center;
   font-family: var(--font);
 }
 
+.product-grid__empty {
+  grid-column: 1 / -1;
+}
+
 .product-grid__status-title {
-  font-size: 17px;
+  font-size: var(--text-lg);
   font-weight: 600;
   color: var(--text);
   margin-bottom: 6px;
 }
 
 .product-grid__status-text {
-  font-size: 13px;
+  font-size: var(--text-base);
   line-height: 1.5;
   color: var(--text-muted);
   margin-bottom: 18px;
 }
 
 .product-grid__retry {
-  padding: 10px 20px;
+  height: var(--control-h);
+  padding: 0 20px;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: var(--red);
   color: var(--text);
-  font-size: 13px;
+  font-size: var(--text-base);
   font-weight: 600;
   cursor: pointer;
+  transition: background 0.15s ease;
 }
 
 .product-grid__retry:hover {
   background: var(--red-hover);
-}
-
-.product-grid__empty {
-  grid-column: 1 / -1;
-  padding: 48px 0;
-  text-align: center;
-  color: var(--text-muted);
-  font-family: var(--font);
 }

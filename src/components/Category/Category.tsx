@@ -1,45 +1,41 @@
 import React from "react";
 import "./Category.css";
 import { useCard } from "../../state/CardContext";
-
-const categories: string[] = [
-  "Mouse",
-  "Keyboard",
-  "Laptop",
-  "Headphones",
-  "Cameras",
-  "Driving",
-  "Monitor",
-  "Components",
-];
+import { CATEGORIES } from "../../utils/catalog";
 
 const CategoryPills: React.FC = () => {
   const { state, dispatch } = useCard();
   const activeCategory = state.filters.category;
 
-  const handleClick = (category: string) => {
+  const select = (category: string) => {
     dispatch({
       type: "SET_CATEGORY",
       payload: activeCategory === category ? "" : category,
     });
   };
 
+  const countFor = (category: string) =>
+    state.products.filter((product) => (category ? product.category === category : true)).length;
+
+  const showCounts = state.productsStatus === "ready";
+
   return (
-    <div className="category-pills">
-      {categories.map((category) => (
-        <button
-          key={category}
-          className={
-            activeCategory === category
-              ? "category-pill category-pill-active"
-              : "category-pill"
-          }
-          onClick={() => handleClick(category)}
-        >
-          {category}
-        </button>
-      ))}
-    </div>
+    <nav className="category-pills" aria-label="Categories">
+      {["", ...CATEGORIES].map((category) => {
+        const isActive = activeCategory === category;
+        return (
+          <button
+            key={category || "all"}
+            className={isActive ? "category-pill category-pill-active" : "category-pill"}
+            onClick={() => select(category)}
+            aria-pressed={isActive}
+          >
+            {category || "All"}
+            {showCounts && <span className="category-pill__count">{countFor(category)}</span>}
+          </button>
+        );
+      })}
+    </nav>
   );
 };
 

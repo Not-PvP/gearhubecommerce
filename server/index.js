@@ -51,8 +51,6 @@ app.post("/api/invoices", async (req, res) => {
         external_id: referenceNumber,
         amount,
         currency: "PHP",
-        // no payment_methods: Xendit's page lists every channel activated in
-        // the dashboard, grouped into cards, e-wallets, banks, retail, etc.
         items: lineItems.map((item) => ({
           name: item.name,
           quantity: item.quantity,
@@ -73,7 +71,6 @@ app.post("/api/invoices", async (req, res) => {
       });
     }
 
-    // Diagnostic: shows which channels Xendit enabled on this invoice.
     console.log("[gearhub-server] Invoice", json.id, "enabled by Xendit:", {
       ewallets: (json.available_ewallets || []).map((c) => c.ewallet_type),
       banks: (json.available_banks || []).map((c) => c.bank_code),
@@ -104,7 +101,7 @@ app.get("/api/invoices/:id", async (req, res) => {
       });
     }
 
-    res.json({ status: json.status });
+    res.json({ status: json.status, amount: json.amount, externalId: json.external_id });
   } catch (err) {
     console.error("[gearhub-server] Failed to retrieve invoice:", err);
     res.status(500).json({ error: "Failed to retrieve invoice" });

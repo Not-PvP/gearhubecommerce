@@ -1,27 +1,26 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useCard } from "../../state/CardContext";
 import { Order, OrderStatus } from "../../types/types";
 import { getPaymentLabel } from "../../utils/paymentMethods";
 import {
-  AdminCredentials,
   LowStockProduct,
+  adminLogin,
   fetchAdminOrders,
   fetchLowStock,
   updateOrderStatus,
-  verifyAdmin,
 } from "../../utils/adminApi";
 import "./AdminDashboard.css";
 
 const STATUSES: OrderStatus[] = ["PENDING", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"];
-const LOW_STOCK_THRESHOLD = 5; // matches the default in the backend
+const LOW_STOCK_THRESHOLD = 5;
 
 const errorText = (err: unknown, fallback: string) =>
   err instanceof Error ? err.message : fallback;
 
 const AdminDashboard: React.FC = () => {
-  const { reloadProducts } = useCard();
+  const { state, reloadProducts, logout } = useCard();
 
-  const [creds, setCreds] = useState<AdminCredentials | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
@@ -34,13 +33,13 @@ const AdminDashboard: React.FC = () => {
   const [error, setError] = useState("");
   const [savingId, setSavingId] = useState<string | null>(null);
 
-  const load = useCallback(async (c: AdminCredentials) => {
+  const load = useCallback(async (t: string) => {
     setLoading(true);
     setError("");
     try {
       const [orderList, lowStockList] = await Promise.all([
-        fetchAdminOrders(c),
-        fetchLowStock(c),
+        fetchAdminOrders(t),
+        fetchLowStock(t),
       ]);
       setOrders(orderList);
       setLowStock(lowStockList);
@@ -55,12 +54,11 @@ const AdminDashboard: React.FC = () => {
     e.preventDefault();
     setLoggingIn(true);
     setLoginError("");
-    const candidate = { email: email.trim(), password };
     try {
-      await verifyAdmin(candidate);
-      setCreds(candidate);
+      const adminToken = await adminLogin(email.trim(), password);
+      setToken(adminToken);
       setPassword("");
-      await load(candidate);
+      await load(adminToken);
     } catch (err) {
       setLoginError(errorText(err, "Couldn't sign in. Is the API running?"));
     } finally {
@@ -68,15 +66,23 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    if (!token && state.user?.isAdmin && state.token) {
+      setToken(state.token);
+      load(state.token);
+    }
+  }, [token, state.user, state.token, load]);
+
   const onLogout = () => {
-    setCreds(null);
+    if (token === state.token) logout();
+    setToken(null);
     setOrders([]);
     setLowStock([]);
     setEmail("");
   };
 
   const onStatusChange = async (order: Order, status: OrderStatus) => {
-    if (!creds || status === order.status) return;
+    if (!token || status === order.status) return;
     if (
       status === "CANCELLED" &&
       !window.confirm(`Cancel order #${order.id}? Its items will go back into stock.`)
@@ -87,12 +93,11 @@ const AdminDashboard: React.FC = () => {
     setSavingId(order.id);
     setError("");
     try {
-      const updated = await updateOrderStatus(creds, order.id, status);
+      const updated = await updateOrderStatus(token, order.id, status);
       setOrders((prev) => prev.map((o) => (o.id === updated.id ? updated : o)));
 
       if (status === "CANCELLED") {
-        // stock changed, so refresh the low-stock list and the storefront products
-        setLowStock(await fetchLowStock(creds));
+        setLowStock(await fetchLowStock(token));
         reloadProducts();
       }
     } catch (err) {
@@ -113,8 +118,7 @@ const AdminDashboard: React.FC = () => {
   const visibleOrders =
     filter === "ALL" ? orders : orders.filter((o) => o.status === filter);
 
-  // ---------- sign-in screen ----------
-  if (!creds) {
+  if (!token) {
     return (
       <main className="admin admin--login">
         <form className="admin-login" onSubmit={onLogin}>
@@ -153,13 +157,12 @@ const AdminDashboard: React.FC = () => {
     );
   }
 
-  // ---------- dashboard ----------
   return (
     <main className="admin">
       <header className="admin-header">
         <h1>Admin dashboard</h1>
         <div className="admin-header__actions">
-          <button className="admin-btn" onClick={() => load(creds)} disabled={loading}>
+          <button className="admin-btn" onClick={() => load(token)} disabled={loading}>
             {loading ? "Refreshing…" : "Refresh"}
           </button>
           <a className="admin-btn" href="#/">Back to store</a>

@@ -3,6 +3,7 @@
     "id": "1",
     "name": "ATOM MK890 Keyboard",
     "category": "Keyboard",
+    "description": "A mechanical keyboard built for gaming and everyday typing, with responsive keys and a sturdy frame for long sessions.",
     "price": 2999,
     "image": "/product/atommk890.png",
     "stock": 12
@@ -11,6 +12,7 @@
     "id": "2",
     "name": "GO W191 Mouse",
     "category": "Mouse",
+    "description": "A lightweight, budget-friendly mouse with a comfortable shape for gaming and everyday use.",
     "price": 1499,
     "image": "/product/gow191.png",
     "stock": 0
@@ -19,6 +21,7 @@
     "id": "3",
     "name": "Asus TUF Gaming A15 Laptop",
     "category": "Laptop",
+    "description": "A durable 15.6-inch gaming laptop from Asus's TUF line, built to handle modern games, streaming and schoolwork.",
     "price": 54999,
     "image": "/product/asusa15.png",
     "stock": 6
@@ -27,6 +30,7 @@
     "id": "4",
     "name": "Beats Studio Pro Wireless Headphones",
     "category": "Headphones",
+    "description": "Over-ear wireless headphones with active noise cancelling, made for music, calls and travel.",
     "price": 18990,
     "image": "/product/beatsstudiopro.png",
     "stock": 5
@@ -35,6 +39,7 @@
     "id": "5",
     "name": "Sony Alpha 7",
     "category": "Cameras",
+    "description": "A full-frame mirrorless camera from Sony for photography and video content creation.",
     "price": 129999,
     "image": "/product/sonyalpha7.png",
     "stock": 3
@@ -43,6 +48,7 @@
     "id": "6",
     "name": "Moza Racing KS Pro Steering Wheel",
     "category": "Driving",
+    "description": "A racing-style steering wheel for sim racing, with a grip and button layout made for long sessions. Mounts on a compatible Moza wheel base.",
     "price": 17999,
     "image": "/product/mozaracing.png",
     "stock": 10
@@ -51,6 +57,7 @@
     "id": "7",
     "name": "Xiaomi 2K Gaming Monitor G27Qi 2026",
     "category": "Monitor",
+    "description": "A 27-inch 2K (QHD) gaming monitor with a high refresh rate for smooth, sharp gameplay.",
     "price": 10999,
     "image": "/product/xiaomi2k.png",
     "stock": 4
@@ -59,6 +66,7 @@
     "id": "8",
     "name": "Nvidia GeForce RTX 5090",
     "category": "Components",
+    "description": "Nvidia's flagship GeForce graphics card, built for high-resolution gaming, ray tracing and AI workloads.",
     "price": 249999,
     "image": "/product/nvidiartx5090.png",
     "stock": 2
@@ -67,6 +75,7 @@
     "id": "9",
     "name": "Corsair Vengeance 32GB DDR5-6000 CL30",
     "category": "Components",
+    "description": "A 32GB kit of DDR5 desktop memory rated at 6000 MT/s with CL30 timings, for fast gaming and multitasking.",
     "price": 9999,
     "image": "/product/corsairvengeance.png",
     "stock": 15
@@ -75,6 +84,7 @@
     "id": "10",
     "name": "Logitech G Pro X Superlight Wireless Gaming Mouse",
     "category": "Mouse",
+    "description": "An ultra-light wireless gaming mouse designed with esports pros for fast, precise aiming.",
     "price": 7999,
     "image": "/product/logitechsuperlight.png",
     "stock": 7
@@ -83,6 +93,7 @@
     "id": "11",
     "name": "Pulsar TenZ Signature Edition Wireless Gaming Mouse",
     "category": "Mouse",
+    "description": "A lightweight wireless gaming mouse made with pro player TenZ, tuned for competitive shooters.",
     "price": 7999,
     "image": "/product/pulsartenz.png",
     "stock": 5
@@ -91,6 +102,7 @@
     "id": "12",
     "name": "MCHOSE X75 Wireless Mechanical Keyboard",
     "category": "Keyboard",
+    "description": "A wireless 75% mechanical keyboard with a compact layout that still keeps the arrow keys and function row.",
     "price": 3499,
     "image": "/product/mchosex75.png",
     "stock": 9
@@ -99,6 +111,7 @@
     "id": "13",
     "name": "Aula F75 RGB Tri-Mode Mechanical Keyboard",
     "category": "Keyboard",
+    "description": "A 75% mechanical keyboard with RGB lighting that connects three ways: wired, 2.4 GHz wireless or Bluetooth.",
     "price": 2499,
     "image": "/product/aulaf75.png",
     "stock": 3
@@ -107,6 +120,7 @@
     "id": "14",
     "name": "Lenovo Legion 5 Laptop",
     "category": "Laptop",
+    "description": "A performance gaming laptop from Lenovo's Legion line, with strong cooling for long gaming sessions.",
     "price": 79999,
     "image": "/product/lenovolegion5.png",
     "stock": 6
@@ -115,6 +129,7 @@
     "id": "15",
     "name": "Lenovo Legion LOQ",
     "category": "Laptop",
+    "description": "Lenovo's more affordable gaming laptop line, an easy way into PC gaming.",
     "price": 54999,
     "image": "/product/lenovoloq.png",
     "stock": 1
@@ -123,6 +138,7 @@
     "id": "16",
     "name": "Razer Blackshark V2",
     "category": "Headphones",
+    "description": "A wired esports gaming headset with a detachable microphone and clear positional audio.",
     "price": 7499,
     "image": "/product/razerblackshark.png",
     "stock": 11
@@ -131,6 +147,7 @@
     "id": "17",
     "name": "Onikuma GT808",
     "category": "Headphones",
+    "description": "A budget gaming headset with a built-in microphone for gaming and voice chat.",
     "price": 1299,
     "image": "/product/onikumagt808.png",
     "stock": 4
@@ -139,6 +156,7 @@
     "id": "18",
     "name": "Logitech C922x Webcam",
     "category": "Cameras",
+    "description": "A Full HD webcam for streaming, video calls and online classes.",
     "price": 4999,
     "image": "/product/logitechc922x.png",
     "stock": 8

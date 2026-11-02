@@ -9,7 +9,7 @@ const Navbar: React.FC = () => {
   return (
     <nav className="navbar">
       <a className="navbar-logo" href="/" aria-label="GearHub home">
-        <img 
+        <img
           src="/logo/gearhub-logo.svg"
           alt="GearHub Logo"
           className="navbar-logo-icon"
@@ -32,19 +32,30 @@ const Navbar: React.FC = () => {
             placeholder="Search for gears"
             value={state.filters.searchQuery}
             onChange={(e) => dispatch({ type: "SET_SEARCH_QUERY", payload: e.target.value })}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                document.getElementById("shop")?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }
+            }}
           />
         </div>
       </div>
 
       <div className="navbar-actions">
-        <button className="navbar-icon-btn"
-          onClick={() => dispatch({ type: "TOGGLE_ORDER_HISTORY" })}
-          aria-label="Order history">
+        <button
+          className={`navbar-icon-btn ${state.isOrderHistoryOpen ? "navbar-icon-btn--active" : ""}`}
+          onClick={() =>
+            state.user
+              ? dispatch({ type: "TOGGLE_ORDER_HISTORY" })
+              : dispatch({ type: "OPEN_AUTH", payload: { next: "orders" } })
+          }
+          aria-label={state.user ? `Account and orders (${state.user.email})` : "Log in"}
+          title={state.user ? state.user.email : "Log in"}>
           <img src="/images/user.svg" alt="" aria-hidden="true" className="navbar-user-icon" />
         </button>
 
         <button
-          className="navbar-icon-btn"
+          className={`navbar-icon-btn ${state.isCartOpen ? "navbar-icon-btn--active" : ""}`}
           onClick={() => dispatch({ type: "TOGGLE_CART" })}
           aria-label={itemCount > 0 ? `Cart, ${itemCount} item${itemCount === 1 ? "" : "s"}` : "Cart"}
         >

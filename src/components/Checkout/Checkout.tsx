@@ -3,7 +3,7 @@ import { useCard } from "../../state/CardContext";
 import { OrderStatus, PaymentMethod, ShippingAddress } from "../../types/types";
 import { createInvoice, getInvoiceStatus } from "../../utils/xenditClient";
 import { PROVINCES, REGION_VI } from "../../utils/locations";
-import { createOrder, saveOrderId } from "../../utils/api";
+import { createOrder } from "../../utils/api";
 import "./Checkout.css";
 
 const EMPTY_ADDRESS: ShippingAddress = {
@@ -22,7 +22,7 @@ type Stage = "form" | "placing" | "awaiting-payment" | "confirmed" | "cancelled"
 
 function Checkout() {
   const { state, dispatch } = useCard();
-  const { cart, isCheckoutOpen } = state;
+  const { cart, isCheckoutOpen, token } = state;
 
   const [address, setAddress] = useState<ShippingAddress>(EMPTY_ADDRESS);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cod");
@@ -66,7 +66,6 @@ function Checkout() {
     clearPolling();
     if (popupRef.current && !popupRef.current.closed) popupRef.current.close();
     dispatch({ type: "TOGGLE_CHECKOUT", payload: false });
-    // delay reset until after the close transition so the form doesn't flash empty
     setTimeout(() => {
       setAddress(EMPTY_ADDRESS);
       setPaymentMethod("cod");
@@ -94,18 +93,19 @@ function Checkout() {
     (value) => value.trim().length > 0,
   );
 
-  // Saves the order in the database (POST /api/orders). The backend re-checks stock,
-  // uses its own prices and decrements stock in one transaction.
-  const finalizeOrder = async (reference: string, status: "PENDING" | "PAID" = "PENDING") => {
+  const finalizeOrder = async (reference: string, invoiceId?: string) => {
     setStage("placing");
     try {
-      const order = await createOrder({
+      if (!token) {
+        throw new Error("Your login expired. Please log in again.");
+      }
+      // the backend re-checks stock and prices before saving
+      const order = await createOrder(token, {
         items: selectedItems.map((item) => ({ productId: item.id, quantity: item.quantity })),
         shippingAddress: address,
         paymentMethod,
-        status,
+        invoiceId,
       });
-      saveOrderId(order.id);
       dispatch({ type: "PLACE_ORDER", payload: order });
       setPlacedOrderId(order.id);
       setPlacedOrderStatus(order.status);
@@ -113,7 +113,7 @@ function Checkout() {
     } catch (err) {
       const reason = err instanceof Error ? err.message : "Couldn't save your order.";
       setErrorMessage(
-        status === "PAID"
+        invoiceId
           ? `Your payment went through, but we couldn't save the order: ${reason} Keep this payment reference: ${reference}.`
           : reason,
       );
@@ -123,7 +123,6 @@ function Checkout() {
 
   const startPollingForPayment = (sessionId: string, orderId: string) => {
     const deadline = Date.now() + POLL_TIMEOUT_MS;
-    // prevents a slow response overlapping the next tick from finalizing the order twice
     let settled = false;
 
     pollIntervalRef.current = setInterval(async () => {
@@ -152,7 +151,7 @@ function Checkout() {
           settled = true;
           clearPolling();
           if (popupRef.current && !popupRef.current.closed) popupRef.current.close();
-          finalizeOrder(orderId, "PAID");
+          finalizeOrder(orderId, sessionId);
         } else if (status === "EXPIRED") {
           settled = true;
           clearPolling();
@@ -184,7 +183,6 @@ function Checkout() {
     );
 
     if (!popup) {
-      // no window.location.href fallback: that redirect target is never read, so the order would be lost
       setErrorMessage(
         "We couldn't open the secure payment window. Please allow pop-ups for this site and try again.",
       );
@@ -201,7 +199,6 @@ function Checkout() {
     setErrorMessage("");
 
     try {
-      // shipping must be its own line item or the Xendit charge undercounts the displayed total
       const { id, invoiceUrl } = await createInvoice(
         [
           ...selectedItems.map((item) => ({
@@ -260,18 +257,18 @@ function Checkout() {
         <div className="checkout-modal__header">
           <h2 className="checkout-modal__title" id="checkout-title">
             {stage === "confirmed"
-              ? "Order Confirmed"
+              ? "Order confirmed"
               : stage === "awaiting-payment"
-                ? "Complete Payment"
+                ? "Complete payment"
                 : stage === "placing"
-                  ? "Placing Order"
+                  ? "Placing order"
                 : stage === "cancelled"
-                  ? "Payment Cancelled"
+                  ? "Payment cancelled"
                   : stage === "error"
-                    ? "Something Went Wrong"
+                    ? "Something went wrong"
                     : "Checkout"}
           </h2>
-          <button className="checkout-modal__close" onClick={onClose} aria-label="Close checkout">
+          <button className="close-btn" onClick={onClose} aria-label="Close checkout">
             ✕
           </button>
         </div>
@@ -284,10 +281,12 @@ function Checkout() {
             </p>
             <p className="checkout-confirmation__id">Order #{placedOrderId}</p>
             <p className="checkout-confirmation__status">
-              Status: {placedOrderStatus}
+              {placedOrderStatus === "PAID"
+                ? "Payment received. You can track it under Your orders."
+                : "Pay the courier on delivery. You can track it under Your orders."}
             </p>
             <button className="checkout-modal__submit" onClick={onClose}>
-              Continue Shopping
+              Keep shopping
             </button>
           </div>
         )}
@@ -328,7 +327,7 @@ function Checkout() {
               Your cart is unchanged — nothing was charged.
             </p>
             <button className="checkout-modal__submit" onClick={onRetry}>
-              Try Again
+              Try again
             </button>
           </div>
         )}
@@ -340,7 +339,7 @@ function Checkout() {
             </p>
             <p className="checkout-confirmation__text">{errorMessage}</p>
             <button className="checkout-modal__submit" onClick={onRetry}>
-              Try Again
+              Try again
             </button>
           </div>
         )}
@@ -399,7 +398,6 @@ function Checkout() {
                       autoComplete="address-level1"
                       value={address.province}
                       onChange={(e) =>
-                        // a new province invalidates the chosen city
                         setAddress((prev) => ({ ...prev, province: e.target.value, city: "" }))
                       }
                       required
@@ -540,7 +538,6 @@ function Checkout() {
               )}
             </aside>
 
-            {/* phones: total and action stay pinned to the bottom of the sheet */}
             <div className="checkout-mobile-bar">
               <span className="checkout-mobile-bar__total">
                 <span className="checkout-mobile-bar__label">Total</span>

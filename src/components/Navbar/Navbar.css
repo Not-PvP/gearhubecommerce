@@ -36,10 +36,10 @@
 }
 
 .navbar-logo-title {
-  font-family: "Magz", sans-serif;
-  font-size: 18px;
+  font-family: var(--font-display);
+  font-size: 19px;
   font-weight: 700;
-  color: var(--surface-1);
+  letter-spacing: 0.01em;
 }
 
 .title-gear {
@@ -52,7 +52,7 @@
 
 .navbar-logo-tagline {
   font-family: var(--font);
-  font-size: 11px;
+  font-size: var(--text-xs);
   color: var(--text-subtle);
   font-weight: 400;
 }
@@ -71,13 +71,13 @@
   align-items: center;
   gap: 10px;
 
-  padding: 8px 16px;
+  height: 42px;
+  padding: 0 16px;
   background: var(--surface-1);
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 
-  transition: all 0.25s ease;
-  box-shadow: 0 0 8px rgba(191, 27, 44, 0.12);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .navbar-search-bar:hover {
@@ -86,36 +86,40 @@
 
 .navbar-search-bar:focus-within {
   border-color: var(--red);
-  box-shadow:
-    0 0 12px rgba(191, 27, 44, 0.45),
-    0 0 24px rgba(191, 27, 44, 0.2);
+  box-shadow: 0 0 0 3px var(--red-tint);
 }
 
 .navbar-search-bar input {
   border: none;
   outline: none;
   flex: 1;
-  font-size: 14px;
+  height: 100%;
+  font-size: var(--text-md);
   font-family: var(--font);
   color: var(--text);
   background: transparent;
 }
 
+.navbar-search-bar input:focus-visible {
+  outline: none;
+}
+
 .navbar-search-bar input::placeholder {
-  color: var(--text-muted);
+  color: var(--text-subtle);
   font-family: var(--font);
 }
 
 .navbar-search-icon {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
+  opacity: 0.7;
 }
 
 .navbar-actions {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
   flex-shrink: 0;
 }
 
@@ -131,13 +135,15 @@
   cursor: pointer;
   position: relative;
   padding: 0;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .navbar-icon-btn:hover {
   background: var(--surface-3);
-  transform: translateY(-1px);
+  border-color: var(--border-strong);
+}
+
+.navbar-icon-btn--active {
   border-color: var(--red);
 }
 
@@ -154,25 +160,26 @@
   color: var(--text);
   font-size: 10px;
   font-weight: 700;
-  min-width: 16px;
-  height: 16px;
-  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+  min-width: 18px;
+  height: 18px;
+  border-radius: var(--radius-pill);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 3px;
-  border: 1.5px solid var(--text);
+  padding: 0 4px;
+  border: 2px solid var(--surface-0);
 }
 
 .navbar-user-icon {
-  width: 19px;
-  height: 19px;
+  width: 18px;
+  height: 18px;
   object-fit: contain;
 }
 
 .navbar-cart-icon {
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
 }
 

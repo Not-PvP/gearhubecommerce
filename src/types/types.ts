@@ -4,6 +4,7 @@ export interface Product {
   id: string;
   name: string;
   category: string;
+  description: string;
   price: number;
   image: string;
   stock: number;
@@ -32,7 +33,6 @@ export interface ShippingAddress {
 
 export type PaymentMethod = CheckoutPaymentMethod;
 
-// what saved orders can hold, including methods from before checkout changed
 export type StoredPaymentMethod = CheckoutPaymentMethod | "card" | "gcash";
 
 export interface OrderItem {
@@ -64,6 +64,20 @@ export interface Order {
 
 export type LoadStatus = "loading" | "ready" | "error";
 
+export interface User {
+  id: number;
+  email: string;
+  isAdmin: boolean;
+}
+
+export type AfterLogin = "checkout" | "orders" | null;
+
+export interface AuthPrompt {
+  open: boolean;
+  reason: string;
+  next: AfterLogin;
+}
+
 export interface State {
   products: Product[];
   productsStatus: LoadStatus;
@@ -74,4 +88,8 @@ export interface State {
   isCartOpen: boolean;
   isCheckoutOpen: boolean;
   isOrderHistoryOpen: boolean;
+  user: User | null;
+  token: string | null;
+  authPrompt: AuthPrompt;
+  lastAdded: { product: Product; count: number } | null;
 }

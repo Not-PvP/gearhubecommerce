@@ -1,4 +1,4 @@
-import { Product, Order, LoadStatus } from "../types/types";
+import { Product, Order, LoadStatus, CartItem, User, AfterLogin } from "../types/types";
 
 export type Action =
   | { type: "ADD_TO_CART"; payload: Product }
@@ -16,5 +16,9 @@ export type Action =
   | { type: "SET_PRODUCTS"; payload: Product[] }
   | { type: "SET_PRODUCTS_STATUS"; payload: { status: LoadStatus; error?: string } }
   | { type: "SET_ORDERS"; payload: Order[] }
-  // the order as saved by the backend (POST /api/orders)
-  | { type: "PLACE_ORDER"; payload: Order };
+  | { type: "PLACE_ORDER"; payload: Order }
+  | { type: "SET_AUTH"; payload: { user: User; token: string } }
+  | { type: "LOGOUT" }
+  | { type: "SET_CART"; payload: CartItem[] }
+  | { type: "OPEN_AUTH"; payload?: { reason?: string; next?: AfterLogin } }
+  | { type: "CLOSE_AUTH" };

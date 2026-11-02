@@ -3,18 +3,21 @@
     "id": "slide-1",
     "image": "/hero/hero1.png",
     "headline": "Shoot Like a Pro",
-    "subtext": "Capture every detail with the Sony Alpha 7."
+    "subtext": "Capture every detail with the Sony Alpha 7.",
+    "category": "Cameras"
   },
   {
     "id": "slide-2",
     "image": "/hero/hero2.png",
     "headline": "Game Without Limits",
-    "subtext": "Power up with the ASUS TUF A15."
+    "subtext": "Power up with the ASUS TUF A15.",
+    "category": "Laptop"
   },
   {
     "id": "slide-3",
     "image": "/hero/hero3.png",
     "headline": "Type. Play. Win.",
-    "subtext": "Level up your setup with the Atom MK890."
+    "subtext": "Level up your setup with the Atom MK890.",
+    "category": "Keyboard"
   }
 ]

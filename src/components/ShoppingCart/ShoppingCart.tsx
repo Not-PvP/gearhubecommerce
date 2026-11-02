@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { useCard } from "../../state/CardContext";
+import { formatPeso } from "../../utils/catalog";
 import "./ShoppingCart.css";
 
 function ShoppingCart() {
@@ -11,6 +13,9 @@ function ShoppingCart() {
   const shipping = subtotal > 0 ? 150 : 0;
   const total = subtotal + shipping;
   const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const selectedCount = cart
+    .filter((item) => item.selected)
+    .reduce((sum, item) => sum + item.quantity, 0);
 
   const onClose = () => dispatch({ type: "TOGGLE_CART", payload: false });
   const onIncrease = (id: string, quantity: number, stock: number) =>
@@ -27,7 +32,26 @@ function ShoppingCart() {
     dispatch({ type: "REMOVE_FROM_CART", payload: id });
   const onToggleSelected = (id: string) =>
     dispatch({ type: "TOGGLE_ITEM_SELECTED", payload: id });
-  const onCheckout = () => dispatch({ type: "TOGGLE_CHECKOUT", payload: true });
+  const onCheckout = () => {
+    if (!state.user) {
+      dispatch({
+        type: "OPEN_AUTH",
+        payload: { reason: "Log in to check out. Your cart will be saved to your account.", next: "checkout" },
+      });
+      return;
+    }
+    dispatch({ type: "TOGGLE_CART", payload: false });
+    dispatch({ type: "TOGGLE_CHECKOUT", payload: true });
+  };
+
+  useEffect(() => {
+    if (!isCartOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") dispatch({ type: "TOGGLE_CART", payload: false });
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isCartOpen, dispatch]);
 
   const hasSelectedItems = cart.some((item) => item.selected);
 
@@ -37,10 +61,18 @@ function ShoppingCart() {
         className={`cart-overlay ${isCartOpen ? "cart-overlay--visible" : ""}`}
         onClick={onClose}
       />
-      <aside className={`cart-drawer ${isCartOpen ? "cart-drawer--open" : ""}`}>
+      <aside
+        className={`cart-drawer ${isCartOpen ? "cart-drawer--open" : ""}`}
+        aria-label="Cart"
+        aria-hidden={!isCartOpen}
+        inert={!isCartOpen}
+      >
         <div className="cart-drawer__header">
-          <h2 className="cart-drawer__title">Your Loadout ({itemCount})</h2>
-          <button className="cart-drawer__close" onClick={onClose}>
+          <h2 className="cart-drawer__title">
+            Your loadout
+            {itemCount > 0 && <span className="cart-drawer__title-count">{itemCount}</span>}
+          </h2>
+          <button className="close-btn" onClick={onClose} aria-label="Close cart">
             ✕
           </button>
         </div>
@@ -48,22 +80,18 @@ function ShoppingCart() {
         <div className="cart-drawer__items">
           {cart.length === 0 ? (
             <div className="cart-drawer__empty">
-               <img
-                  src="/images/cart-empty.svg"
-                  alt="Empty shopping cart"
-                  className="cart-drawer__empty-icon"
-                />
-
-                <h3 className="cart-drawer__empty-title">
-                  Your cart is empty
-                </h3>
-
-                <p className="cart-drawer__empty-text">
-                  Time to level up.
-                </p>
-
+              <img
+                src="/images/cart-empty.svg"
+                alt=""
+                aria-hidden="true"
+                className="cart-drawer__empty-icon"
+              />
+              <h3 className="cart-drawer__empty-title">Your cart is empty</h3>
+              <p className="cart-drawer__empty-text">
+                Gear you add from the shop shows up here.
+              </p>
               <button className="cart-drawer__continue" onClick={onClose}>
-                Continue Shopping
+                Browse gear
               </button>
             </div>
           ) : (
@@ -74,38 +102,40 @@ function ShoppingCart() {
                   className="cart-item__checkbox"
                   checked={item.selected}
                   onChange={() => onToggleSelected(item.id)}
+                  aria-label={`Include ${item.name} in checkout`}
                 />
 
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="cart-item__image"
-                />
+                <img src={item.image} alt="" className="cart-item__image" />
                 <div className="cart-item__details">
                   <p className="cart-item__name">{item.name}</p>
-                  <p className="cart-item__price">
-                    ₱{item.price.toLocaleString()}
-                  </p>
+                  <p className="cart-item__price">{formatPeso(item.price * item.quantity)}</p>
                   <div className="cart-item__qty">
-                    <button onClick={() => onDecrease(item.id, item.quantity)}>
+                    <button
+                      onClick={() => onDecrease(item.id, item.quantity)}
+                      aria-label={item.quantity === 1 ? `Remove ${item.name}` : `Decrease ${item.name} quantity`}
+                    >
                       −
                     </button>
-                    <span>{item.quantity}</span>
-                    <button onClick={() => onIncrease(item.id, item.quantity, item.stock)}
-                      disabled={item.quantity >= item.stock}>
+                    <span aria-live="polite">{item.quantity}</span>
+                    <button
+                      onClick={() => onIncrease(item.id, item.quantity, item.stock)}
+                      disabled={item.quantity >= item.stock}
+                      aria-label={`Increase ${item.name} quantity`}
+                    >
                       +
                     </button>
+                    {item.quantity > 1 && (
+                      <span className="cart-item__each">{formatPeso(item.price)} each</span>
+                    )}
                   </div>
                   {item.quantity >= item.stock && (
-                      <p className="cart-stock-warning">
-                        Only {item.stock} left in stock
-                      </p>
-                    )}
+                    <p className="cart-stock-warning">That's all {item.stock} we have in stock</p>
+                  )}
                 </div>
                 <button
                   className="cart-item__remove"
                   onClick={() => onRemove(item.id)}
-                  aria-label="Remove item"
+                  aria-label={`Remove ${item.name}`}
                 >
                   ✕
                 </button>
@@ -118,22 +148,24 @@ function ShoppingCart() {
           <div className="cart-drawer__footer">
             <div className="cart-drawer__row">
               <span>Subtotal</span>
-              <span>₱{subtotal.toLocaleString()}</span>
+              <span>{formatPeso(subtotal)}</span>
             </div>
             <div className="cart-drawer__row">
               <span>Shipping</span>
-              <span>₱{shipping.toLocaleString()}</span>
+              <span>{formatPeso(shipping)}</span>
             </div>
             <div className="cart-drawer__row cart-drawer__row--total">
               <span>Total</span>
-              <span>₱{total.toLocaleString()}</span>
+              <span>{formatPeso(total)}</span>
             </div>
             <button
               className="cart-drawer__checkout"
               onClick={onCheckout}
               disabled={!hasSelectedItems}
             >
-              Checkout
+              {hasSelectedItems
+                ? `Check out ${selectedCount} ${selectedCount === 1 ? "item" : "items"}`
+                : "Select items to check out"}
             </button>
           </div>
         )}

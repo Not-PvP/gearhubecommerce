@@ -1,7 +1,6 @@
 import { State } from "../types/types";
 import { Action } from "./actions";
 
-
 export const initialState: State = {
   products: [],
   productsStatus: "loading",
@@ -17,6 +16,10 @@ export const initialState: State = {
   isCartOpen: false,
   isCheckoutOpen: false,
   isOrderHistoryOpen: false,
+  user: null,
+  token: null,
+  authPrompt: { open: false, reason: "", next: null },
+  lastAdded: null,
 };
 
 export function cardReducer(state: State, action: Action): State {
@@ -26,10 +29,12 @@ export function cardReducer(state: State, action: Action): State {
         return state;
       }
       const existing = state.cart.find((item) => item.id === action.payload.id);
+      const lastAdded = { product: action.payload, count: (state.lastAdded?.count ?? 0) + 1 };
 
       if (existing) {
         return {
           ...state,
+          lastAdded,
           cart: state.cart.map((item) =>
             item.id === action.payload.id
               ? { ...item, quantity: Math.min(item.quantity + 1, item.stock) }
@@ -40,6 +45,7 @@ export function cardReducer(state: State, action: Action): State {
 
       return {
         ...state,
+        lastAdded,
         cart: [...state.cart, { ...action.payload, quantity: 1, selected: true }],
       };
     }
@@ -145,7 +151,6 @@ export function cardReducer(state: State, action: Action): State {
     }
 
     case "PLACE_ORDER": {
-      // the backend already validated stock and saved the order; mirror it locally
       const order = action.payload;
       const orderedQty = new Map(order.items.map((item) => [item.id, item.quantity]));
 
@@ -172,6 +177,41 @@ export function cardReducer(state: State, action: Action): State {
             : item,
         ),
       };
+    }
+
+    case "SET_AUTH": {
+      return { ...state, user: action.payload.user, token: action.payload.token };
+    }
+
+    case "LOGOUT": {
+      return {
+        ...state,
+        user: null,
+        token: null,
+        cart: [],
+        orders: [],
+        isCheckoutOpen: false,
+        isOrderHistoryOpen: false,
+      };
+    }
+
+    case "SET_CART": {
+      return { ...state, cart: action.payload };
+    }
+
+    case "OPEN_AUTH": {
+      return {
+        ...state,
+        authPrompt: {
+          open: true,
+          reason: action.payload?.reason ?? "",
+          next: action.payload?.next ?? null,
+        },
+      };
+    }
+
+    case "CLOSE_AUTH": {
+      return { ...state, authPrompt: { open: false, reason: "", next: null } };
     }
 
     default:

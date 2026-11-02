@@ -8,8 +8,9 @@ import ShoppingCart from "./components/ShoppingCart/ShoppingCart";
 import Checkout from "./components/Checkout/Checkout";
 import OrderHistory from "./components/OrderHistory/OrderHistory";
 import AdminDashboard from "./components/AdminDashboard/AdminDashboard";
+import AuthModal from "./components/AuthModal/AuthModal";
+import CartToast from "./components/CartToast/CartToast";
 
-// The admin dashboard lives at http://localhost:3000/#/admin (no router needed).
 const isAdminRoute = () => window.location.hash === "#/admin";
 
 function App() {
@@ -29,15 +30,19 @@ function App() {
     <>
       <Navbar />
 
-      <div className="app">
+      <main className="app">
         <Hero />
-        <Category />
-        <FilterBar />
-        <ProductGrid />
+        <section className="shop" id="shop" aria-label="Shop">
+          <Category />
+          <FilterBar />
+          <ProductGrid />
+        </section>
         <ShoppingCart />
         <Checkout />
         <OrderHistory />
-      </div>
+        <AuthModal />
+        <CartToast />
+      </main>
     </>
   );
 }

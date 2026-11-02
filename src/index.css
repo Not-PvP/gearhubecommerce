@@ -1,16 +1,17 @@
-/* Global */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
-/* Design tokens — use these instead of raw hex values */
 :root {
   --red: #bf1b2c;
   --red-hover: #a41624;
-  --red-text: #e5414f;    /* red for small text on dark: passes 4.5:1 */
+  --red-text: #e5414f;
+  --red-tint: rgba(191, 27, 44, 0.12);
+  --red-glow: rgba(191, 27, 44, 0.3);
 
-  --surface-0: #000000;   /* cards, navbar */
-  --surface-1: #111111;   /* drawers, menus, inputs */
-  --surface-2: #1a1a1a;   /* page background, quiet buttons */
-  --surface-3: #232323;   /* hover on quiet surfaces */
+  --surface-0: #000000;
+  --surface-1: #111111;
+  --surface-2: #1a1a1a;
+  --surface-3: #232323;
+  --scrim: rgba(0, 0, 0, 0.65);
 
   --border: #2a2a2a;
   --border-strong: #444444;
@@ -18,12 +19,41 @@
   --text: #ffffff;
   --text-muted: #a3a3a3;
   --text-subtle: #8a8a8a;
+  --text-placeholder: #6b6b6b;
 
-  --success: #2a9d4a;
+  --success: #4cc26b;
+  --success-tint: rgba(76, 194, 107, 0.14);
+  --warning: #f5b82e;
+  --warning-tint: rgba(245, 184, 46, 0.14);
+  --info: #4ea8f5;
+  --info-tint: rgba(78, 168, 245, 0.14);
+  --shipped: #8f9cf5;
+  --shipped-tint: rgba(143, 156, 245, 0.14);
+  --danger: #ef5350;
+  --danger-tint: rgba(239, 83, 80, 0.14);
 
   --font: "Poppins", Arial, sans-serif;
-}
+  --font-display: "Magz", "Poppins", sans-serif;
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 13px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
 
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+  --control-h: 38px;
+
+  --shadow-pop: 0 12px 32px rgba(0, 0, 0, 0.45);
+  --shadow-panel: 0 20px 60px rgba(0, 0, 0, 0.55);
+
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --page-gutter: 2rem;
+}
 
 * {
   margin: 0;
@@ -35,6 +65,7 @@ body {
   font-family: var(--font);
   background-color: var(--surface-2);
   color: var(--text);
+  -webkit-font-smoothing: antialiased;
 }
 
 button,
@@ -44,25 +75,88 @@ textarea {
   font-family: inherit;
 }
 
+img {
+  max-width: 100%;
+}
+
 html,
 body {
   overscroll-behavior: none;
 }
 
-/* App */
+html {
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar {
+  display: none;
+}
+
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--red-text);
+  outline-offset: 2px;
+}
+
+.close-btn {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.close-btn:hover {
+  background: var(--surface-3);
+  color: var(--text);
+}
 
 .app {
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 1rem 2rem;
+  padding: 1rem var(--page-gutter) 3rem;
 }
 
-.app h1 {
-  margin-bottom: 2rem;
+.shop {
+  margin-top: 24px;
+  scroll-margin-top: 92px;
+}
+
+@media (max-width: 720px) {
+  .shop {
+    margin-top: 16px;
+    scroll-margin-top: 124px;
+  }
+}
+
+@media (max-width: 720px) {
+  :root {
+    --page-gutter: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 @font-face {
   font-family: "Magz";
   src: url("../public/fonts/Magz.otf") format("opentype");
+  font-display: swap;
 }

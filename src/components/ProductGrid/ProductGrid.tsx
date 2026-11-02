@@ -1,31 +1,21 @@
+import { useState } from "react";
 import ProductCard from "../ProductCard/ProductCard";
+import ProductDetails from "../ProductDetails/ProductDetails";
 import "./ProductGrid.css";
 import { useCard } from "../../state/CardContext";
+import { filterProducts } from "../../utils/catalog";
 
 function ProductGrid() {
-  const { state, reloadProducts } = useCard();
+  const { state, dispatch, reloadProducts } = useCard();
   const { products, filters, productsStatus, productsError } = state;
-  const { searchQuery, category, maxPrice, sortBy } = filters;
+  const sortedProducts = filterProducts(products, filters);
+  const [openProductId, setOpenProductId] = useState<string | null>(null);
 
-  const filteredProducts = products
-    .filter((product) => {
-      const query = searchQuery.toLowerCase();
-      return (
-        product.name.toLowerCase().includes(query) ||
-        product.category.toLowerCase().includes(query)
-      );
-    })
-    .filter((product) => (category ? product.category === category : true))
-    .filter((product) => product.price <= maxPrice);
-
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    if (a.stock === 0 && b.stock > 0) return 1;
-    if (a.stock > 0 && b.stock === 0) return -1;
-    
-    if (sortBy === "price-asc") return a.price - b.price;
-    if (sortBy === "price-desc") return b.price - a.price;
-    return 0;
-  });
+  const clearFilters = () => {
+    dispatch({ type: "SET_SEARCH_QUERY", payload: "" });
+    dispatch({ type: "SET_CATEGORY", payload: "" });
+    dispatch({ type: "SET_MAX_PRICE", payload: Infinity });
+  };
 
   if (productsStatus === "loading") {
     return (
@@ -52,11 +42,22 @@ function ProductGrid() {
   return (
     <div className="product-grid">
       {sortedProducts.length === 0 ? (
-        <p className="product-grid__empty">No products match your filters.</p>
+        <div className="product-grid__empty">
+          <p className="product-grid__status-title">No gear matches these filters</p>
+          <p className="product-grid__status-text">
+            Try a different search, another category or a higher max price.
+          </p>
+          <button className="product-grid__retry" onClick={clearFilters}>
+            Clear filters
+          </button>
+        </div>
       ) : (
         sortedProducts.map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <ProductCard key={product.id} product={product} onOpen={() => setOpenProductId(product.id)} />
         ))
+      )}
+      {openProductId && (
+        <ProductDetails productId={openProductId} onClose={() => setOpenProductId(null)} />
       )}
     </div>
   );
