@@ -1,7 +1,7 @@
 import { Product, Order, LoadStatus, CartItem, User, AfterLogin } from "../types/types";
 
 export type Action =
-  | { type: "ADD_TO_CART"; payload: Product }
+  | { type: "ADD_TO_CART"; payload: { product: Product; quantity: number } }
   | { type: "REMOVE_FROM_CART"; payload: string }
   | { type: "UPDATE_QUANTITY"; payload: { id: string; quantity: number } }
   | { type: "CLEAR_CART" }

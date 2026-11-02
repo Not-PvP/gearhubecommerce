@@ -17,6 +17,7 @@ function ProductDetails({ productId, onClose }: ProductDetailsProps) {
   const listed = state.products.find((p) => p.id === productId);
   const [product, setProduct] = useState<Product | undefined>(listed);
   const [loadError, setLoadError] = useState("");
+  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     let active = true;
@@ -50,6 +51,8 @@ function ProductDetails({ productId, onClose }: ProductDetailsProps) {
   const inCart = state.cart.find((item) => item.id === product.id)?.quantity ?? 0;
   const soldOut = stock === 0;
   const allInCart = !soldOut && inCart >= stock;
+  const maxAddable = Math.max(0, stock - inCart);
+  const selectedQuantity = Math.min(quantity, maxAddable);
 
   const stockLabel = soldOut ? "Out of stock" : stock <= LOW_STOCK ? `Only ${stock} left` : "In stock";
   const stockClass = soldOut ? "out" : stock <= LOW_STOCK ? "low" : "in";
@@ -72,7 +75,11 @@ function ProductDetails({ productId, onClose }: ProductDetailsProps) {
             {name}
           </h2>
           <p className="product-details__price">{formatPeso(price)}</p>
-
+          {inCart > 0 && (
+            <span className="product-details__in-cart">
+              {inCart} in your cart
+            </span>
+          )}
           <p className={`product-details__stock product-details__stock--${stockClass}`}>{stockLabel}</p>
 
           <p className="product-details__description">
@@ -82,14 +89,52 @@ function ProductDetails({ productId, onClose }: ProductDetailsProps) {
           {loadError && <p className="product-details__note">Couldn't refresh stock: {loadError}</p>}
 
           <div className="product-details__actions">
+            {!soldOut && !allInCart && (
+              <div className="product-details__quantity">
+                <span>Quantity</span>
+
+                <div className="product-details__quantity-controls">
+                  <button
+                    type="button"
+                    onClick={() => setQuantity((current) => Math.max(1, current - 1))}
+                    disabled={selectedQuantity <= 1}
+                    aria-label="Decrease quantity"
+                  >
+                    −
+                  </button>
+
+                  <span>{selectedQuantity}</span>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setQuantity((current) => Math.min(current + 1, maxAddable))
+                    }
+                    disabled={selectedQuantity >= maxAddable}
+                    aria-label="Increase quantity"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            )}
+
             <button
               className="product-details__add"
               disabled={soldOut || allInCart}
-              onClick={() => dispatch({ type: "ADD_TO_CART", payload: product })}
+              onClick={() =>
+                dispatch({
+                  type: "ADD_TO_CART",
+                  payload: { product, quantity: selectedQuantity },
+                })
+              }
             >
-              {soldOut ? "Sold out" : allInCart ? "All in your cart" : "Add to cart"}
+              {soldOut
+                ? "Sold out"
+                : allInCart
+                  ? "All in your cart"
+                  : `Add ${selectedQuantity} to cart`}
             </button>
-            {inCart > 0 && <span className="product-details__in-cart">{inCart} in your cart</span>}
           </div>
         </div>
       </div>

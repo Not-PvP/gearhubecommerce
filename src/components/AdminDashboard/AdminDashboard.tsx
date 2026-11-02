@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCard } from "../../state/CardContext";
 import { Order, OrderStatus } from "../../types/types";
 import { getPaymentLabel } from "../../utils/paymentMethods";
@@ -32,6 +32,35 @@ const AdminDashboard: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [openStatusId, setOpenStatusId] = useState<string | null>(null);
+  const statusMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (openStatusId === null) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (
+        statusMenuRef.current &&
+        !statusMenuRef.current.contains(event.target as Node)
+      ) {
+        setOpenStatusId(null);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpenStatusId(null);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [openStatusId]);
 
   const load = useCallback(async (t: string) => {
     setLoading(true);
@@ -250,17 +279,61 @@ const AdminDashboard: React.FC = () => {
                       <td>{getPaymentLabel(order.paymentMethod)}</td>
                       <td>₱{order.total.toLocaleString()}</td>
                       <td>
-                        <select
-                          className={`admin-status admin-status--${order.status.toLowerCase()}`}
-                          value={order.status}
-                          disabled={order.status === "CANCELLED" || savingId === order.id}
-                          onChange={(e) => onStatusChange(order, e.target.value as OrderStatus)}
-                          aria-label={`Status for order ${order.id}`}
+                        <div
+                          className="admin-status-wrap"
+                          ref={openStatusId === order.id ? statusMenuRef : null}
                         >
-                          {STATUSES.map((s) => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </select>
+                          <button
+                            type="button"
+                            className={`admin-status-button admin-status--${order.status.toLowerCase()}`}
+                            onClick={() =>
+                              setOpenStatusId((current) =>
+                                current === order.id ? null : order.id
+                              )
+                            }
+                            disabled={order.status === "CANCELLED" || savingId === order.id}
+                            aria-expanded={openStatusId === order.id}
+                            aria-haspopup="listbox"
+                            aria-label={`Status for order ${order.id}: ${order.status}`}
+                          >
+                            {savingId === order.id ? "Updating…" : order.status}
+                            <img
+                              src="/images/arrow-down.svg"
+                              alt=""
+                              aria-hidden="true"
+                              className={`admin-status-icon ${openStatusId === order.id ? "open" : ""}`}
+                            />
+                          </button>
+
+                          {openStatusId === order.id && (
+                            <div
+                              className="admin-status-menu"
+                              role="listbox"
+                              aria-label={`Change status for order ${order.id}`}
+                            >
+                              {STATUSES.map((status) => (
+                                <button
+                                  key={status}
+                                  type="button"
+                                  role="option"
+                                  aria-selected={status === order.status}
+                                  className={
+                                    status === order.status
+                                      ? "admin-status-menu-item admin-status-menu-item-active"
+                                      : "admin-status-menu-item"
+                                  }
+                                  onClick={() => {
+                                    setOpenStatusId(null);
+                                    onStatusChange(order, status);
+                                  }}
+                                >
+                                  <span className={`admin-status-dot admin-status-dot--${status.toLowerCase()}`} />
+                                  {status}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -287,9 +360,8 @@ const AdminDashboard: React.FC = () => {
                     <small>{product.category ?? "Uncategorized"}</small>
                   </span>
                   <span
-                    className={`admin-stock__badge ${
-                      product.stock_quantity === 0 ? "admin-stock__badge--out" : ""
-                    }`}
+                    className={`admin-stock__badge ${product.stock_quantity === 0 ? "admin-stock__badge--out" : ""
+                      }`}
                   >
                     {product.stock_quantity === 0
                       ? "Out of stock"

@@ -25,19 +25,33 @@ export const initialState: State = {
 export function cardReducer(state: State, action: Action): State {
   switch (action.type) {
     case "ADD_TO_CART": {
-      if (action.payload.stock <= 0) { 
+      const { product, quantity } = action.payload;
+
+      if (product.stock <= 0 || quantity <= 0) {
         return state;
       }
-      const existing = state.cart.find((item) => item.id === action.payload.id);
-      const lastAdded = { product: action.payload, count: (state.lastAdded?.count ?? 0) + 1 };
+
+      const existing = state.cart.find((item) => item.id === product.id);
+
+      const currentQuantity = existing?.quantity ?? 0;
+      const addedQuantity = Math.min(quantity, product.stock - currentQuantity);
+
+      if (addedQuantity <= 0) {
+        return state;
+      }
+
+      const lastAdded = {
+        product,
+        count: (state.lastAdded?.count ?? 0) + addedQuantity,
+      };
 
       if (existing) {
         return {
           ...state,
           lastAdded,
           cart: state.cart.map((item) =>
-            item.id === action.payload.id
-              ? { ...item, quantity: Math.min(item.quantity + 1, item.stock) }
+            item.id === product.id
+              ? { ...item, quantity: item.quantity + addedQuantity }
               : item,
           ),
         };
@@ -46,7 +60,7 @@ export function cardReducer(state: State, action: Action): State {
       return {
         ...state,
         lastAdded,
-        cart: [...state.cart, { ...action.payload, quantity: 1, selected: true }],
+        cart: [...state.cart, { ...product, quantity: addedQuantity, selected: true }],
       };
     }
 

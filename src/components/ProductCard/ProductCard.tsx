@@ -26,7 +26,11 @@ function ProductCard({ product, onOpen }: ProductCardProps) {
   }, []);
 
   const handleAddToCart = () => {
-    dispatch({ type: "ADD_TO_CART", payload: product });
+    dispatch({
+      type: "ADD_TO_CART",
+      payload: { product, quantity: 1 },
+    });
+
     setJustAdded(true);
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => setJustAdded(false), 1400);
@@ -73,9 +77,8 @@ function ProductCard({ product, onOpen }: ProductCardProps) {
           <p className="product-card__price">{formatPeso(price)}</p>
           {!soldOut && (
             <p
-              className={`product-card__stock ${
-                stock <= LOW_STOCK ? "product-card__stock--low" : "product-card__stock--in"
-              }`}
+              className={`product-card__stock ${stock <= LOW_STOCK ? "product-card__stock--low" : "product-card__stock--in"
+                }`}
             >
               {stock <= LOW_STOCK ? `Only ${stock} left` : "In stock"}
             </p>
