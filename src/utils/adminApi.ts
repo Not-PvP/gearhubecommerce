@@ -1,7 +1,7 @@
 import { Order, OrderStatus } from "../types/types";
 
 // If your utils/api.ts already exports the API base URL, import it here instead.
-const API_URL = process.env.REACT_APP_API_URL ?? "http://localhost:5000";
+const API_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
 export interface AdminCredentials {
   email: string;
