@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useCard } from "../../state/CardContext";
 import { Order, OrderStatus } from "../../types/types";
 import { getPaymentLabel } from "../../utils/paymentMethods";
@@ -34,6 +34,40 @@ const AdminDashboard: React.FC = () => {
   const [savingId, setSavingId] = useState<string | null>(null);
   const [openStatusId, setOpenStatusId] = useState<string | null>(null);
   const statusMenuRef = useRef<HTMLDivElement>(null);
+  const statusButtonRef = useRef<HTMLButtonElement | null>(null);
+  const statusListRef = useRef<HTMLDivElement>(null);
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
+
+  // The menu is position: fixed (so the table's overflow can't clip it), which means
+  // it must be re-anchored to its button whenever the page or table scrolls.
+  const updateMenuPosition = useCallback(() => {
+    const button = statusButtonRef.current;
+    if (!button) return;
+    const rect = button.getBoundingClientRect();
+    const menuHeight = statusListRef.current?.offsetHeight ?? 0;
+    const menuWidth = statusListRef.current?.offsetWidth ?? 170;
+    const gap = 6;
+    const fitsBelow = rect.bottom + gap + menuHeight <= window.innerHeight;
+    const top = fitsBelow || rect.top - gap - menuHeight < 0
+      ? rect.bottom + gap
+      : rect.top - gap - menuHeight;
+    const left = Math.min(rect.left, window.innerWidth - menuWidth - 8);
+    setMenuPos({ top, left: Math.max(8, left) });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (openStatusId === null) {
+      setMenuPos(null);
+      return;
+    }
+    updateMenuPosition();
+    window.addEventListener("scroll", updateMenuPosition, true);
+    window.addEventListener("resize", updateMenuPosition);
+    return () => {
+      window.removeEventListener("scroll", updateMenuPosition, true);
+      window.removeEventListener("resize", updateMenuPosition);
+    };
+  }, [openStatusId, updateMenuPosition]);
 
   useEffect(() => {
     if (openStatusId === null) return;
@@ -286,11 +320,12 @@ const AdminDashboard: React.FC = () => {
                           <button
                             type="button"
                             className={`admin-status-button admin-status--${order.status.toLowerCase()}`}
-                            onClick={() =>
+                            onClick={(e) => {
+                              statusButtonRef.current = e.currentTarget;
                               setOpenStatusId((current) =>
                                 current === order.id ? null : order.id
-                              )
-                            }
+                              );
+                            }}
                             disabled={order.status === "CANCELLED" || savingId === order.id}
                             aria-expanded={openStatusId === order.id}
                             aria-haspopup="listbox"
@@ -307,7 +342,13 @@ const AdminDashboard: React.FC = () => {
 
                           {openStatusId === order.id && (
                             <div
+                              ref={statusListRef}
                               className="admin-status-menu"
+                              style={
+                                menuPos
+                                  ? { top: menuPos.top, left: menuPos.left }
+                                  : { visibility: "hidden" }
+                              }
                               role="listbox"
                               aria-label={`Change status for order ${order.id}`}
                             >
