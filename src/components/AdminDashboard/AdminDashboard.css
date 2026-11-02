@@ -72,6 +72,8 @@
 .admin-btn:focus-visible,
 .admin select:focus-visible,
 .admin input:focus-visible,
+.admin-status-button:focus-visible,
+.admin-status-menu-item:focus-visible,
 .admin-link:focus-visible {
   outline: 2px solid var(--red);
   outline-offset: 2px;
@@ -216,15 +218,145 @@
   max-width: 320px;
 }
 
-.admin select.admin-status--pending   { color: var(--warning); background: var(--warning-tint); }
-.admin select.admin-status--paid      { color: var(--info); background: var(--info-tint); }
-.admin select.admin-status--shipped   { color: var(--shipped); background: var(--shipped-tint); }
-.admin select.admin-status--delivered { color: var(--success); background: var(--success-tint); }
-.admin select.admin-status--cancelled { color: var(--danger); background: var(--danger-tint); }
-
-.admin .admin-status {
-  border-color: transparent;
+.admin-status-wrap {
+  position: relative;
+  display: inline-block;
 }
+
+.admin-status-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 135px;
+  height: var(--control-h);
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-base);
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.admin-status-button:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  filter: brightness(1.08);
+}
+
+.admin-status-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-status-button.admin-status--pending {
+  color: var(--warning);
+  background: var(--warning-tint);
+}
+
+.admin-status-button.admin-status--paid {
+  color: var(--info);
+  background: var(--info-tint);
+}
+
+.admin-status-button.admin-status--shipped {
+  color: var(--shipped);
+  background: var(--shipped-tint);
+}
+
+.admin-status-button.admin-status--delivered {
+  color: var(--success);
+  background: var(--success-tint);
+}
+
+.admin-status-button.admin-status--cancelled {
+  color: var(--danger);
+  background: var(--danger-tint);
+}
+
+.admin-status-icon {
+  width: 12px;
+  height: 12px;
+  object-fit: contain;
+  transition: transform 0.2s ease;
+}
+
+.admin-status-icon.open {
+  transform: rotate(180deg);
+}
+
+.admin-status-menu {
+  position: fixed;
+  z-index: 100;
+  min-width: 170px;
+  padding: 4px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-pop);
+  animation: menuIn 0.16s var(--ease);
+}
+
+.admin-status-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  text-align: left;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  padding: 9px 12px;
+  font-size: var(--text-base);
+  font-family: var(--font);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.admin-status-menu-item:hover {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.admin-status-menu-item-active {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.admin-status-menu-item-active::after {
+  content: "✓";
+  margin-left: auto;
+  color: var(--red-text);
+}
+
+.admin-status-dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.admin-status-dot--pending {
+  background: var(--warning);
+}
+
+.admin-status-dot--paid {
+  background: var(--info);
+}
+
+.admin-status-dot--shipped {
+  background: var(--shipped);
+}
+
+.admin-status-dot--delivered {
+  background: var(--success);
+}
+
+.admin-status-dot--cancelled {
+  background: var(--danger);
+}
+
 
 .admin-stock {
   list-style: none;
