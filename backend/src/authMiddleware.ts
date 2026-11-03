@@ -51,3 +51,19 @@ export const requireAdmin = async (req: Request, res: Response, next: NextFuncti
     res.status(500).json({ error: 'Failed to verify admin' });
   }
 };
+
+// admins manage the store; they don't shop in it
+export const requireCustomer = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = await db.user.findUnique({ where: { id: req.user!.userId } });
+
+    if (user?.isAdmin) {
+      return res.status(403).json({ error: 'Admin accounts cannot place orders or use a cart.' });
+    }
+
+    next();
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to verify account' });
+  }
+};

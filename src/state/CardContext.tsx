@@ -33,6 +33,7 @@ interface CardContextValue {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  startSession: (session: Session) => Promise<void>;
 }
 
 const CardContext = createContext<CardContextValue | undefined>(undefined);
@@ -85,6 +86,14 @@ export function CardProvider({ children }: { children: ReactNode }) {
     saveToken(token);
     setCartReady(false);
     dispatch({ type: "SET_AUTH", payload: { user, token } });
+
+    // admin accounts only manage the store, so they don't get a cart or order history
+    if (user.isAdmin) {
+      lastSavedKey.current = "";
+      dispatch({ type: "SET_CART", payload: [] });
+      dispatch({ type: "SET_ORDERS", payload: [] });
+      return;
+    }
 
     try {
       const [savedCart, orders] = await Promise.all([fetchCart(token), fetchMyOrders(token)]);
@@ -155,7 +164,7 @@ export function CardProvider({ children }: { children: ReactNode }) {
   }, [cart, token, cartReady, logout]);
 
   return (
-    <CardContext.Provider value={{ state, dispatch, reloadProducts, login, register, logout }}>
+    <CardContext.Provider value={{ state, dispatch, reloadProducts, login, register, logout, startSession }}>
       {children}
     </CardContext.Provider>
   );

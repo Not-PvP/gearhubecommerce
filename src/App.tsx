@@ -10,11 +10,14 @@ import OrderHistory from "./components/OrderHistory/OrderHistory";
 import AdminDashboard from "./components/AdminDashboard/AdminDashboard";
 import AuthModal from "./components/AuthModal/AuthModal";
 import CartToast from "./components/CartToast/CartToast";
+import { useCard } from "./state/CardContext";
 
 const isAdminRoute = () => window.location.hash === "#/admin";
 
 function App() {
   const [adminView, setAdminView] = useState(isAdminRoute());
+  const { state } = useCard();
+  const isAdmin = Boolean(state.user?.isAdmin);
 
   useEffect(() => {
     const onHashChange = () => setAdminView(isAdminRoute());
@@ -22,7 +25,12 @@ function App() {
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
 
-  if (adminView) {
+  // admin accounts only manage the store: keep them on the dashboard
+  useEffect(() => {
+    if (isAdmin && !isAdminRoute()) window.location.hash = "#/admin";
+  }, [isAdmin, adminView]);
+
+  if (adminView || isAdmin) {
     return <AdminDashboard />;
   }
 

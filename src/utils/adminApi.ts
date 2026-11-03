@@ -1,5 +1,5 @@
 import { Order, OrderStatus } from "../types/types";
-import { login } from "./api";
+import { Session, login } from "./api";
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
@@ -29,12 +29,12 @@ async function adminFetch<T>(path: string, token: string, init: RequestInit = {}
   return body as T;
 }
 
-export async function adminLogin(email: string, password: string): Promise<string> {
-  const { user, token } = await login(email, password);
-  if (!user.isAdmin) {
+export async function adminLogin(email: string, password: string): Promise<Session> {
+  const session = await login(email, password);
+  if (!session.user.isAdmin) {
     throw new Error("This account is not an admin.");
   }
-  return token;
+  return session;
 }
 
 export const fetchAdminOrders = (token: string) => adminFetch<Order[]>("/api/admin/orders", token);

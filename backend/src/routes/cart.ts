@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { db } from '../db';
 import { validateResource } from '../validate';
-import { authenticateToken } from '../authMiddleware';
+import { authenticateToken, requireCustomer } from '../authMiddleware';
 import { saveCartBodySchema, saveCartSchema } from '../schemas';
 import { serializeProduct } from '../serializers';
 
@@ -34,7 +34,7 @@ router.get('/', async (req: Request, res: Response) => {
   }
 });
 
-router.put('/', validateResource(saveCartSchema), async (req: Request, res: Response) => {
+router.put('/', requireCustomer, validateResource(saveCartSchema), async (req: Request, res: Response) => {
   const userId = req.user!.userId;
   const { items } = saveCartBodySchema.parse(req.body);
 

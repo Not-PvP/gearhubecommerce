@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { db } from '../db';
 import { validateResource } from '../validate';
-import { authenticateToken } from '../authMiddleware';
+import { authenticateToken, requireCustomer } from '../authMiddleware';
 import { createOrderBodySchema, createOrderSchema, orderIdSchema } from '../schemas';
 import { SHIPPING_FEE, orderInclude, serializeOrder } from '../serializers';
 import { HttpError } from '../errors';
@@ -11,7 +11,7 @@ const router = Router();
 
 router.use(authenticateToken);
 
-router.post('/', validateResource(createOrderSchema), async (req: Request, res: Response) => {
+router.post('/', requireCustomer, validateResource(createOrderSchema), async (req: Request, res: Response) => {
   const userId = req.user!.userId;
   const { items, shippingAddress, paymentMethod, invoiceId } = createOrderBodySchema.parse(req.body);
 

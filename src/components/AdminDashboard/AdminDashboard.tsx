@@ -18,7 +18,7 @@ const errorText = (err: unknown, fallback: string) =>
   err instanceof Error ? err.message : fallback;
 
 const AdminDashboard: React.FC = () => {
-  const { state, reloadProducts, logout } = useCard();
+  const { state, reloadProducts, logout, startSession } = useCard();
 
   const [token, setToken] = useState<string | null>(null);
   const [email, setEmail] = useState("");
@@ -118,10 +118,12 @@ const AdminDashboard: React.FC = () => {
     setLoggingIn(true);
     setLoginError("");
     try {
-      const adminToken = await adminLogin(email.trim(), password);
-      setToken(adminToken);
+      const session = await adminLogin(email.trim(), password);
+      // share the admin session with the rest of the app so the storefront stays locked
+      await startSession(session);
+      setToken(session.token);
       setPassword("");
-      await load(adminToken);
+      await load(session.token);
     } catch (err) {
       setLoginError(errorText(err, "Couldn't sign in. Is the API running?"));
     } finally {
@@ -228,7 +230,6 @@ const AdminDashboard: React.FC = () => {
           <button className="admin-btn" onClick={() => load(token)} disabled={loading}>
             {loading ? "Refreshing…" : "Refresh"}
           </button>
-          <a className="admin-btn" href="#/">Back to store</a>
           <button className="admin-btn" onClick={onLogout}>Sign out</button>
         </div>
       </header>
