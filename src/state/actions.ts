@@ -10,6 +10,8 @@ export type Action =
   | { type: "SET_MAX_PRICE"; payload: number }
   | { type: "SET_SORT"; payload: "default" | "price-asc" | "price-desc" }
   | { type: "TOGGLE_CART"; payload?: boolean }
+  | { type: "OPEN_PRODUCT_DETAILS"; payload: string }
+  | { type: "CLOSE_PRODUCT_DETAILS" }
   | { type: "TOGGLE_ITEM_SELECTED"; payload: string }
   | { type: "TOGGLE_CHECKOUT"; payload?: boolean }
   | { type: "TOGGLE_ORDER_HISTORY"; payload?: boolean }

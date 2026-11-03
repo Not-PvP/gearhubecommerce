@@ -1,4 +1,3 @@
-import { useState } from "react";
 import ProductCard from "../ProductCard/ProductCard";
 import ProductDetails from "../ProductDetails/ProductDetails";
 import "./ProductGrid.css";
@@ -9,7 +8,6 @@ function ProductGrid() {
   const { state, dispatch, reloadProducts } = useCard();
   const { products, filters, productsStatus, productsError } = state;
   const sortedProducts = filterProducts(products, filters);
-  const [openProductId, setOpenProductId] = useState<string | null>(null);
 
   const clearFilters = () => {
     dispatch({ type: "SET_SEARCH_QUERY", payload: "" });
@@ -53,11 +51,18 @@ function ProductGrid() {
         </div>
       ) : (
         sortedProducts.map((product) => (
-          <ProductCard key={product.id} product={product} onOpen={() => setOpenProductId(product.id)} />
+          <ProductCard
+            key={product.id}
+            product={product}
+            onOpen={() => dispatch({ type: "OPEN_PRODUCT_DETAILS", payload: product.id })}
+          />
         ))
       )}
-      {openProductId && (
-        <ProductDetails productId={openProductId} onClose={() => setOpenProductId(null)} />
+      {state.openProductId && (
+        <ProductDetails
+          productId={state.openProductId}
+          onClose={() => dispatch({ type: "CLOSE_PRODUCT_DETAILS" })}
+        />
       )}
     </div>
   );

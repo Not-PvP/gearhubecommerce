@@ -14,6 +14,7 @@ export const initialState: State = {
     sortBy: "default",
   },
   isCartOpen: false,
+  openProductId: null,
   isCheckoutOpen: false,
   isOrderHistoryOpen: false,
   user: null,
@@ -25,26 +26,34 @@ export const initialState: State = {
 export function cardReducer(state: State, action: Action): State {
   switch (action.type) {
     case "ADD_TO_CART": {
+      // gets the product and the amount from action
       const { product, quantity } = action.payload;
 
+      // if no stock or amount leave the state unchanged
       if (product.stock <= 0 || quantity <= 0) {
         return state;
       }
 
+      // is the product already in the cart?
       const existing = state.cart.find((item) => item.id === product.id);
 
+      // if may jn sa cart pila kabilog? - 0 siya if waay
       const currentQuantity = existing?.quantity ?? 0;
+      // pira kabilog lng pwede iadd nga di dapat mag sobra sa available stock (sagap min (ex. 2, stock 5 - curr 2)) = 2
       const addedQuantity = Math.min(quantity, product.stock - currentQuantity);
 
+      // if di pwede ka add leave the state unchanged
       if (addedQuantity <= 0) {
         return state;
       }
 
+      // ano to siya nga product gin addan? para iupdate ana quantity
       const lastAdded = {
         product,
         count: (state.lastAdded?.count ?? 0) + addedQuantity,
       };
 
+      // kung ara sa cart copy lng to ah tas update lng lastadded, tas himo lng bag o listahan kung nag increase quantity
       if (existing) {
         return {
           ...state,
@@ -57,6 +66,7 @@ export function cardReducer(state: State, action: Action): State {
         };
       }
 
+      // if wara sa cart copy lng state tas add lng product sa cart list with its quantity
       return {
         ...state,
         lastAdded,
@@ -67,13 +77,16 @@ export function cardReducer(state: State, action: Action): State {
     case "REMOVE_FROM_CART": {
       return {
         ...state,
+        // kung magmatch id ti remove ih
         cart: state.cart.filter((item) => item.id !== action.payload),
       };
     }
 
+    // minus or add quanity sa cart mismo
     case "UPDATE_QUANTITY": {
       const { id, quantity } = action.payload;
 
+      // if 0 ti remove na gid item ibig sabihin
       if (quantity <= 0) {
         return {
           ...state,
@@ -84,6 +97,7 @@ export function cardReducer(state: State, action: Action): State {
       return {
         ...state,
         cart: state.cart.map((item) =>
+          // prevent item from exceeding
           item.id === id ? { ...item, quantity: Math.min(quantity, item.stock) } : item,
         ),
       };
@@ -125,11 +139,21 @@ export function cardReducer(state: State, action: Action): State {
     }
 
     case "TOGGLE_CART": {
+      const isCartOpen =
+        action.payload !== undefined ? action.payload : !state.isCartOpen;
       return {
         ...state,
-        isCartOpen:
-          action.payload !== undefined ? action.payload : !state.isCartOpen,
+        isCartOpen,
+        openProductId: isCartOpen ? null : state.openProductId,
       };
+    }
+
+    case "OPEN_PRODUCT_DETAILS": {
+      return { ...state, openProductId: action.payload };
+    }
+
+    case "CLOSE_PRODUCT_DETAILS": {
+      return { ...state, openProductId: null };
     }
 
     case "TOGGLE_CHECKOUT": {
@@ -166,6 +190,7 @@ export function cardReducer(state: State, action: Action): State {
 
     case "PLACE_ORDER": {
       const order = action.payload;
+      // anuto nga product kag pila
       const orderedQty = new Map(order.items.map((item) => [item.id, item.quantity]));
 
       return {
@@ -175,7 +200,9 @@ export function cardReducer(state: State, action: Action): State {
             ? { ...product, stock: Math.max(0, product.stock - orderedQty.get(product.id)!) }
             : product,
         ),
+        // adds new order tas avoid lng duplication
         orders: [order, ...state.orders.filter((existing) => existing.id !== order.id)],
+        // remove and gin order sa cart kay magto na to sa order
         cart: state.cart.filter((item) => !orderedQty.has(item.id)),
         isCheckoutOpen: true,
         isCartOpen: false,
@@ -193,10 +220,12 @@ export function cardReducer(state: State, action: Action): State {
       };
     }
 
+    // saves signed-in user kag anda token
     case "SET_AUTH": {
       return { ...state, user: action.payload.user, token: action.payload.token };
     }
 
+    // clears all
     case "LOGOUT": {
       return {
         ...state,
@@ -213,6 +242,7 @@ export function cardReducer(state: State, action: Action): State {
       return { ...state, cart: action.payload };
     }
 
+    // open log in prompt
     case "OPEN_AUTH": {
       return {
         ...state,
