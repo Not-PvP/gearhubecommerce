@@ -30,6 +30,7 @@ function ShoppingCart() {
     });
   const onRemove = (id: string) =>
     dispatch({ type: "REMOVE_FROM_CART", payload: id });
+  const onClearCart = () => dispatch({ type: "CLEAR_CART" });
   const onToggleSelected = (id: string) =>
     dispatch({ type: "TOGGLE_ITEM_SELECTED", payload: id });
   const onCheckout = () => {
@@ -72,9 +73,16 @@ function ShoppingCart() {
             Your loadout
             {itemCount > 0 && <span className="cart-drawer__title-count">{itemCount}</span>}
           </h2>
-          <button className="close-btn" onClick={onClose} aria-label="Close cart">
-            ✕
-          </button>
+          <div className="cart-drawer__header-actions">
+            {cart.length > 0 && (
+              <button className="cart-drawer__clear" onClick={onClearCart}>
+                Clear cart
+              </button>
+            )}
+            <button className="close-btn" onClick={onClose} aria-label="Close cart">
+              ✕
+            </button>
+          </div>
         </div>
 
         <div className="cart-drawer__items">
@@ -105,9 +113,22 @@ function ShoppingCart() {
                   aria-label={`Include ${item.name} in checkout`}
                 />
 
-                <img src={item.image} alt="" className="cart-item__image" />
+                <button
+                  type="button"
+                  className="cart-item__image-button"
+                  onClick={() => dispatch({ type: "OPEN_PRODUCT_DETAILS", payload: item.id })}
+                  aria-label={`View details for ${item.name}`}
+                >
+                  <img src={item.image} alt="" className="cart-item__image" />
+                </button>
                 <div className="cart-item__details">
-                  <p className="cart-item__name">{item.name}</p>
+                  <button
+                    type="button"
+                    className="cart-item__name"
+                    onClick={() => dispatch({ type: "OPEN_PRODUCT_DETAILS", payload: item.id })}
+                  >
+                    {item.name}
+                  </button>
                   <p className="cart-item__price">{formatPeso(item.price * item.quantity)}</p>
                   <div className="cart-item__qty">
                     <button
@@ -135,6 +156,7 @@ function ShoppingCart() {
                 <button
                   className="cart-item__remove"
                   onClick={() => onRemove(item.id)}
+                  title="Remove item from cart"
                   aria-label={`Remove ${item.name}`}
                 >
                   ✕

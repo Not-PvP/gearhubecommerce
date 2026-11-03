@@ -86,6 +86,7 @@ export interface State {
   orders: Order[];
   filters: Filters;
   isCartOpen: boolean;
+  openProductId: string | null;
   isCheckoutOpen: boolean;
   isOrderHistoryOpen: boolean;
   user: User | null;
