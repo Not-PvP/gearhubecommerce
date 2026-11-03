@@ -20,9 +20,6 @@ const POLL_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
 
 type Stage = "form" | "placing" | "awaiting-payment" | "confirmed" | "cancelled" | "error";
 
-const formatPhoneSuffix = (digits: string) =>
-  [digits.slice(0, 2), digits.slice(2, 5), digits.slice(5, 9)].filter(Boolean).join(" ");
-
 function Checkout() {
   const { state, dispatch } = useCard();
   const { cart, isCheckoutOpen, token } = state;
@@ -370,17 +367,13 @@ function Checkout() {
                       <span className="checkout-phone__prefix" aria-hidden="true">09</span>
                       <input
                         className="checkout-field__input checkout-phone__input"
-                        placeholder="12 345 6789"
+                        placeholder="123 456 789"
                         inputMode="numeric"
                         autoComplete="tel-national"
                         aria-label="Mobile number, after 09"
-                        value={formatPhoneSuffix(address.phone.slice(2))}
+                        value={address.phone.slice(2)}
                         onChange={(e) => {
-                          const enteredDigits = e.target.value.replace(/\D/g, "");
-                          const digits = (enteredDigits.startsWith("09")
-                            ? enteredDigits.slice(2)
-                            : enteredDigits
-                          ).slice(0, 9);
+                          const digits = e.target.value.replace(/\D/g, "").slice(0, 9);
                           setAddress((prev) => ({ ...prev, phone: `09${digits}` }));
                         }}
                         required
