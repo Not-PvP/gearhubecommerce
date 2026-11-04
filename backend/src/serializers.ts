@@ -34,14 +34,6 @@ export const orderInclude = { items: { include: { product: true } } } as const; 
 // tells ts its value has the shape of an order returned by prisma w/ the related items
 export type OrderWithItems = Prisma.OrderGetPayload<{ include: typeof orderInclude }>; // type checking
 
-const parseAddress = (raw: string): ShippingAddress | string => { // address as text and tries to parse as json
-  try {
-    return JSON.parse(raw) as ShippingAddress;
-  } catch {
-    return raw; // if not valid, returns orig text
-  }
-};
-
 export const serializeOrder = (order: OrderWithItems) => {
   const items = order.items.map((item) => ({
     id: String(item.productId),
@@ -52,6 +44,15 @@ export const serializeOrder = (order: OrderWithItems) => {
   }));
   const subtotal = items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
   const shipping = subtotal > 0 ? SHIPPING_FEE : 0;
+  // the address is stored in separate columns; the frontend gets it back as one object
+  const shippingAddress: ShippingAddress = {
+    fullName: order.fullName,
+    street: order.street,
+    city: order.city,
+    province: order.province,
+    postalCode: order.postalCode,
+    phone: order.phone,
+  };
   // may compuations because? para ni sa frontend nga idisplay
   
   return {
@@ -60,7 +61,7 @@ export const serializeOrder = (order: OrderWithItems) => {
     subtotal,
     shipping,
     total: subtotal + shipping,
-    shippingAddress: parseAddress(order.shippingAddress),
+    shippingAddress,
     paymentMethod: order.paymentMethod,
     status: order.status,
     createdAt: (order.createdAt ?? new Date()).toISOString(),

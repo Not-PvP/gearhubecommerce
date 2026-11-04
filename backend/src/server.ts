@@ -7,8 +7,10 @@ import authRouter from './routes/auth';
 import cartRouter from './routes/cart';
 import ordersRouter from './routes/orders';
 import adminRouter from './routes/admin';
+import { getJwtSecret } from './authMiddleware';
 
 dotenv.config();
+getJwtSecret(); // fails right away in production if JWT_SECRET is missing
 
 const app = express(); // himo back web app
 const PORT = process.env.PORT || 5000; 
