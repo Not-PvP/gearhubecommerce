@@ -53,8 +53,14 @@ model Order {
   id              Int         @id @default(autoincrement())
   userId          Int?        @map("user_id")
   status          String      @default("PENDING") @db.VarChar(20)
-  shippingAddress String      @map("shipping_address")
+  fullName        String      @map("full_name") @db.VarChar(255)
+  phone           String      @db.VarChar(20)
+  street          String
+  city            String      @db.VarChar(100)
+  province        String      @db.VarChar(100)
+  postalCode      String      @map("postal_code") @db.VarChar(10)
   paymentMethod   String?     @map("payment_method") @db.VarChar(50)
+  xenditInvoiceId String?     @unique @map("xendit_invoice_id") @db.VarChar(100)
   createdAt       DateTime    @default(now()) @map("created_at") @db.Timestamp(6)
   items           OrderItem[]
   user            User?       @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -72,6 +78,7 @@ model OrderItem {
   order     Order    @relation(fields: [orderId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   product   Product  @relation(fields: [productId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
+  @@unique([orderId, productId])
   @@index([orderId])
   @@index([productId])
   @@map("order_items")

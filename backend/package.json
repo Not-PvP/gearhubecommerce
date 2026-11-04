@@ -12,7 +12,8 @@
     "prisma:status": "prisma migrate status",
     "prisma:baseline": "prisma migrate resolve --applied 20261014033405_init",
     "prisma:studio": "prisma studio",
-    "seed": "prisma db seed"
+    "seed": "prisma db seed",
+    "seed:demo": "node -r dotenv/config prisma/seed-demo.js"
   },
   "keywords": [],
   "author": "",

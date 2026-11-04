@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import { Prisma } from '@prisma/client';
 import { db } from '../db';
 import { validateResource } from '../validate';
 import { authenticateToken, requireCustomer } from '../authMiddleware';
@@ -27,6 +28,12 @@ router.post('/', requireCustomer, validateResource(createOrderSchema), async (re
 
     // online payment: confirm with Xendit that it's paid for the right amount
     if (paymentMethod === 'xendit') {
+      // one Xendit invoice can only pay for one order
+      const invoiceAlreadyUsed = await db.order.findUnique({ where: { xenditInvoiceId: invoiceId! } });
+      if (invoiceAlreadyUsed) {
+        throw new HttpError(409, 'This payment was already used for another order.');
+      }
+
       const products = await db.product.findMany({ where: { id: { in: [...quantities.keys()] } } });
       const subtotal = products.reduce(
         (sum, product) => sum + Number(product.price) * (quantities.get(product.id) ?? 0),
@@ -72,7 +79,13 @@ router.post('/', requireCustomer, validateResource(createOrderSchema), async (re
           userId,
           status,
           paymentMethod,
-          shippingAddress: JSON.stringify(shippingAddress),
+          fullName: shippingAddress.fullName,
+          phone: shippingAddress.phone,
+          street: shippingAddress.street,
+          city: shippingAddress.city,
+          province: shippingAddress.province,
+          postalCode: shippingAddress.postalCode,
+          xenditInvoiceId: paymentMethod === 'xendit' ? invoiceId : null,
           items: {
             create: [...quantities].map(([productId, quantity]) => ({
               productId,
@@ -90,6 +103,14 @@ router.post('/', requireCustomer, validateResource(createOrderSchema), async (re
   } catch (error) {
     if (error instanceof HttpError) {
       return res.status(error.status).json({ error: error.message });
+    }
+    // two requests with the same invoice id at the same moment: the database unique rule stops the second one
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002' &&
+      String(error.meta?.target).includes('xendit_invoice_id')
+    ) {
+      return res.status(409).json({ error: 'This payment was already used for another order.' });
     }
     console.error(error);
     res.status(500).json({ error: 'Failed to place order' });

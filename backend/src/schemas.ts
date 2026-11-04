@@ -42,10 +42,10 @@ export const saveCartBodySchema = z.object({
 export const saveCartSchema = z.object({ body: saveCartBodySchema });
 
 export const shippingAddressSchema = z.object({
-  fullName: z.string().trim().min(1, 'Full name is required.'),
+  fullName: z.string().trim().min(1, 'Full name is required.').max(255, 'Full name is too long.'),
   street: z.string().trim().min(1, 'Street address is required.'),
-  city: z.string().trim().min(1, 'City is required.'),
-  province: z.string().trim().min(1, 'Province is required.'),
+  city: z.string().trim().min(1, 'City is required.').max(100, 'City is too long.'),
+  province: z.string().trim().min(1, 'Province is required.').max(100, 'Province is too long.'),
   postalCode: z.string().trim().regex(/^\d{4}$/, 'Postal code must be 4 digits.'),
   phone: z.string().trim().regex(/^09\d{9}$/, 'Phone must be 11 digits starting with 09.'),
 });
@@ -58,7 +58,7 @@ export const createOrderBodySchema = z
     items: z.array(lineItemSchema).min(1, 'The order has no items.'),
     shippingAddress: shippingAddressSchema,
     paymentMethod: z.enum(PAYMENT_METHODS, 'paymentMethod must be cod or xendit.'),
-    invoiceId: z.string().trim().min(1).optional(),
+    invoiceId: z.string().trim().min(1).max(100).optional(),
   })
   .refine((body) => body.paymentMethod !== 'xendit' || body.invoiceId, {
     message: 'invoiceId is required for online payments.',

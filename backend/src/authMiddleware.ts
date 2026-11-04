@@ -5,7 +5,11 @@ import { AuthPayload } from './types/express';
 
 export const getJwtSecret = () => {
   if (!process.env.JWT_SECRET) {
-    console.warn('JWT_SECRET is not set in backend/.env; using an insecure fallback secret.');
+    // in production a missing secret would let anyone forge tokens, so refuse to run
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('JWT_SECRET must be set when NODE_ENV=production.');
+    }
+    console.warn('JWT_SECRET is not set in backend/.env; using an insecure fallback secret (development only).');
   }
   return process.env.JWT_SECRET || 'fallback_secret';
 };
