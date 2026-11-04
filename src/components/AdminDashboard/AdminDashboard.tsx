@@ -96,16 +96,16 @@ const AdminDashboard: React.FC = () => {
     };
   }, [openStatusId]);
 
-  const load = useCallback(async (t: string) => {
-    setLoading(true);
-    setError("");
+  const load = useCallback(async (t: string) => { 
+    setLoading(true); // marks the dashboard as loading; and
+    setError(""); // clears any prev error
     try {
-      const [orderList, lowStockList] = await Promise.all([
-        fetchAdminOrders(t),
-        fetchLowStock(t),
+      const [orderList, lowStockList] = await Promise.all([ // 
+        fetchAdminOrders(t), // runs them at the same time, and
+        fetchLowStock(t), // waits for both to finish
       ]);
-      setOrders(orderList);
-      setLowStock(lowStockList);
+      setOrders(orderList); // kung mag succeed both (sa babaw), isave mga returned orders; and
+      setLowStock(lowStockList); // low products in the component's state (local react state)
     } catch (err) {
       setError(errorText(err, "Couldn't load the dashboard."));
     } finally {
@@ -172,16 +172,16 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const counts = useMemo(() => {
-    const byStatus: Record<string, number> = {};
+  const counts = useMemo(() => { // ginatally kung pira ka orders have each status
+    const byStatus: Record<string, number> = {}; // hold ya number sa kada status
     orders.forEach((o) => {
       byStatus[o.status] = (byStatus[o.status] ?? 0) + 1;
     });
-    return byStatus;
-  }, [orders]);
+    return byStatus; // return ya tong na count sa useMemo
+  }, [orders]); // tels react when pagid ma calculate
 
-  const visibleOrders =
-    filter === "ALL" ? orders : orders.filter((o) => o.status === filter);
+  const visibleOrders = // hold the list used after applying the selected status filter
+    filter === "ALL" ? orders : orders.filter((o) => o.status === filter); // chooses order list depende sa naselect
 
   if (!token) {
     return (

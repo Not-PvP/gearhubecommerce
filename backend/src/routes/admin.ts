@@ -8,8 +8,9 @@ import { HttpError } from '../errors';
 
 const router = Router();
 
-const LOW_STOCK_THRESHOLD = 5;
+const LOW_STOCK_THRESHOLD = 5; // 5 or fewer
 
+// requires every route in this router to pass and duha ka ni
 router.use(authenticateToken, requireAdmin);
 
 router.get('/orders', async (_req: Request, res: Response) => {
@@ -25,13 +26,14 @@ router.get('/orders', async (_req: Request, res: Response) => {
   }
 });
 
+// reads the order id kag ang ginrequest nga status
 router.patch('/orders/:id/status', validateResource(updateOrderStatusSchema), async (req: Request, res: Response) => {
   const id = Number(req.params.id);
   const { status: nextStatus } = updateOrderStatusBodySchema.parse(req.body);
 
   try {
     const updated = await db.$transaction(async (tx) => {
-      const order = await tx.order.findUnique({ where: { id }, include: orderInclude });
+      const order = await tx.order.findUnique({ where: { id }, include: orderInclude }); // check kung ga exist tana sa db
 
       if (!order) {
         throw new HttpError(404, 'Order not found');
@@ -40,10 +42,11 @@ router.patch('/orders/:id/status', validateResource(updateOrderStatusSchema), as
         throw new HttpError(409, 'A cancelled order cannot be changed');
       }
 
-      if (nextStatus === 'CANCELLED') {
-        if (order.status === 'DELIVERED') {
+      if (nextStatus === 'CANCELLED') { // check if ginatry cancel ka admin ang order
+        if (order.status === 'DELIVERED') { // kung delivered di tana pwede ma cancel
           throw new HttpError(409, 'A delivered order cannot be cancelled');
         }
+
         // cancelling puts the items back in stock
         for (const item of order.items) {
           if (item.productId != null) {
@@ -55,6 +58,7 @@ router.patch('/orders/:id/status', validateResource(updateOrderStatusSchema), as
         }
       }
 
+      // ginasave na requested status kag ang updated order
       return tx.order.update({
         where: { id },
         data: { status: nextStatus },
@@ -72,10 +76,12 @@ router.patch('/orders/:id/status', validateResource(updateOrderStatusSchema), as
   }
 });
 
+// basahun na to ang threshold, kung not valid gamitun na to and default nga 5
 router.get('/low-stock', validateResource(lowStockSchema), async (req: Request, res: Response) => {
   const requested = Number(req.query.threshold);
   const threshold = Number.isInteger(requested) && requested >= 0 ? requested : LOW_STOCK_THRESHOLD;
 
+  // sagapun ya tong mga product nga stock na is 5 and below
   try {
     const products = await db.product.findMany({
       where: { stockQuantity: { lte: threshold } },

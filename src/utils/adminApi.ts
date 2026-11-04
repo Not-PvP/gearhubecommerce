@@ -12,6 +12,7 @@ export interface LowStockProduct {
   stock_quantity: number;
 }
 
+// Sends an authenticated admin API request and returns its response, or throws if it fails.
 async function adminFetch<T>(path: string, token: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, {
     ...init,
@@ -29,6 +30,7 @@ async function adminFetch<T>(path: string, token: string, init: RequestInit = {}
   return body as T;
 }
 
+// signs in through the regular login API, reject lng dayun if di admin ang account
 export async function adminLogin(email: string, password: string): Promise<Session> {
   const session = await login(email, password);
   if (!session.user.isAdmin) {
@@ -37,12 +39,17 @@ export async function adminLogin(email: string, password: string): Promise<Sessi
   return session;
 }
 
+// request all orders
 export const fetchAdminOrders = (token: string) => adminFetch<Order[]>("/api/admin/orders", token);
 
+// requests products at or below the default threshold
 export const fetchLowStock = (token: string) => adminFetch<LowStockProduct[]>("/api/admin/low-stock", token);
 
+// sends the new status to the backend
 export const updateOrderStatus = (token: string, orderId: string, status: OrderStatus) =>
   adminFetch<Order>(`/api/admin/orders/${orderId}/status`, token, {
     method: "PATCH",
     body: JSON.stringify({ status }),
   });
+
+// each request uses adminFetch
