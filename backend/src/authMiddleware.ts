@@ -10,6 +10,7 @@ export const getJwtSecret = () => {
   return process.env.JWT_SECRET || 'fallback_secret';
 };
 
+// token check!
 export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.header('Authorization');
 
@@ -20,7 +21,7 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     return res.status(401).json({ error: 'Access denied. No token provided.' });
   }
 
-  try {
+  try { // verifies the token kag mapatuloy siya by putting the user ID sa req.user
     const decoded = jwt.verify(token, getJwtSecret());
 
     if (typeof decoded === 'string' || typeof decoded.userId !== 'number') {
@@ -53,7 +54,7 @@ export const requireAdmin = async (req: Request, res: Response, next: NextFuncti
 };
 
 // admins manage the store; they don't shop in it
-export const requireCustomer = async (req: Request, res: Response, next: NextFunction) => {
+export const requireCustomer = async (req: Request, res: Response, next: NextFunction) => { // gina ensure nga ang account bukot admin
   try {
     const user = await db.user.findUnique({ where: { id: req.user!.userId } });
 

@@ -25,16 +25,16 @@ const OrderHistory: React.FC = () => {
   const [cancelErrors, setCancelErrors] = useState<Record<string, string>>({});
 
   const onCancelOrder = async (order: Order) => {
-    if (!state.token) return;
+    if (!state.token) return; // check anay kung may log in token
     setCancellingId(order.id);
     setCancelErrors((prev) => ({ ...prev, [order.id]: "" }));
     try {
-      const updated = await cancelOrder(state.token, order.id);
-      dispatch({
+      const updated = await cancelOrder(state.token, order.id); // sends the cancellation request kag mabton updated nga order
+      dispatch({ // replaced the order with the updated
         type: "SET_ORDERS",
         payload: state.orders.map((o) => (o.id === updated.id ? updated : o)),
       });
-      setConfirmingId(null);
+      setConfirmingId(null); // clears he confirmation kag reload na ang products
       reloadProducts();
     } catch (err) {
       setCancelErrors((prev) => ({

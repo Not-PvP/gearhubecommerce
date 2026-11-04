@@ -14,6 +14,7 @@ const TOKEN_EXPIRES_IN = '1d';
 const signToken = (user: { id: number; email: string }) =>
   jwt.sign({ userId: user.id, email: user.email }, getJwtSecret(), { expiresIn: TOKEN_EXPIRES_IN });
 
+// ginavalidate ka registration ang request kag ginacheck kung gamit na ang email
 router.post('/register', validateResource(registerSchema), async (req: Request, res: Response) => {
   const { email, password } = registerBodySchema.parse(req.body);
 
@@ -23,6 +24,7 @@ router.post('/register', validateResource(registerSchema), async (req: Request, 
       return res.status(409).json({ error: 'Email already registered.' });
     }
 
+    // para manghash password
     const saltRounds = 10;
     // never store the plain password
     const passwordHash = await bcrypt.hash(password, saltRounds);
@@ -42,11 +44,12 @@ router.post('/register', validateResource(registerSchema), async (req: Request, 
   }
 });
 
+// mag sign in
 router.post('/login', validateResource(loginSchema), async (req: Request, res: Response) => {
   const { email, password } = loginBodySchema.parse(req.body);
 
   try {
-    const user = await db.user.findUnique({ where: { email } });
+    const user = await db.user.findUnique({ where: { email } }); // look for the email
 
     // same error for wrong email or wrong password
     const isValidPassword = user ? await bcrypt.compare(password, user.passwordHash) : false;
@@ -65,7 +68,7 @@ router.post('/logout', (_req: Request, res: Response) => {
   res.json({ message: 'Logged out successfully. Please remove the token from your client.' });
 });
 
-router.get('/me', authenticateToken, async (req: Request, res: Response) => {
+router.get('/me', authenticateToken, async (req: Request, res: Response) => { // validates the token halin sa fethme sa api.ts
   try {
     const user = await db.user.findUnique({ where: { id: req.user!.userId } });
 

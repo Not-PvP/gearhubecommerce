@@ -8,7 +8,8 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
-  <CardProvider>
+  // wraps app because components can only read context above them
+  <CardProvider> 
     <App />
   </CardProvider>
 );

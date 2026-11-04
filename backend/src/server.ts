@@ -1,3 +1,4 @@
+// entry point ka back ah
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -9,22 +10,24 @@ import adminRouter from './routes/admin';
 
 dotenv.config();
 
-const app = express();
-const PORT = process.env.PORT || 5000;
+const app = express(); // himo back web app
+const PORT = process.env.PORT || 5000; 
 
-app.use(cors());
-app.use(express.json());
+app.use(cors()); // allow ya ang browser frontend nga mahimo request sa back
+app.use(express.json()); // basa ya mga incoming JSON request para makaaccess and routes ka data
 
-app.use('/api/products', productsRouter);
+// connect URL prefixes to route files
+app.use('/api/admin', adminRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/orders', ordersRouter);
-app.use('/api/admin', adminRouter);
+app.use('/api/products', productsRouter);
 
-app.get('/api/health', (_req, res) => {
+app.get('/api/health', (_req, res) => { // to check kung ga run mn gid
   res.status(200).json({ status: 'ok' });
 });
 
+// start na server sa nagabutang nga port
 app.listen(PORT, () => {
   console.log(`GearHub API server running on http://localhost:${PORT}`);
 });

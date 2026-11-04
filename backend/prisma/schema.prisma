@@ -1,4 +1,5 @@
-generator client {
+// wara  tana nakaconnect sa db mismo pero ga generate siya prisma client para sa db.ts to connect sa db
+generator client { // para makagenerate prisma client nga gamitun ka back (generate code ba nga gadescribe pano kaw magwork sa database models mo); magiging available siya dayun sa @prisma/client tas iimport na to ka db.ts
   provider = "prisma-client-js"
 }
 
@@ -7,6 +8,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// mga database models na ni
 // @@map / @map keep the original snake_case table and column names
 model User {
   id           Int        @id @default(autoincrement())

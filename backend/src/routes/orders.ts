@@ -11,15 +11,17 @@ const router = Router();
 
 router.use(authenticateToken);
 
+// magplace ka order
 router.post('/', requireCustomer, validateResource(createOrderSchema), async (req: Request, res: Response) => {
-  const userId = req.user!.userId;
+  const userId = req.user!.userId; // buol na id ka user nga naka sign in kag buol details ka order
   const { items, shippingAddress, paymentMethod, invoiceId } = createOrderBodySchema.parse(req.body);
 
-  const quantities = new Map<number, number>();
+  const quantities = new Map<number, number>(); // kung magcombine duplicate id
   for (const { productId, quantity } of items) {
     quantities.set(productId, (quantities.get(productId) ?? 0) + quantity);
   }
 
+  // bayad po!
   try {
     let status = 'PENDING';
 
@@ -34,6 +36,7 @@ router.post('/', requireCustomer, validateResource(createOrderSchema), async (re
       status = 'PAID';
     }
 
+    // hceck kung kada product ga exist pa kag may stock antis iplace ang order
     // one transaction: if any step fails, nothing is saved
     const order = await db.$transaction(async (tx) => {
       const productIds = [...quantities.keys()];
@@ -63,6 +66,7 @@ router.post('/', requireCustomer, validateResource(createOrderSchema), async (re
 
       await tx.cartItem.deleteMany({ where: { userId, productId: { in: productIds } } });
 
+      // kung successful, update na to ang cart kag ma create tana record ka order
       return tx.order.create({
         data: {
           userId,
@@ -92,12 +96,13 @@ router.post('/', requireCustomer, validateResource(createOrderSchema), async (re
   }
 });
 
+// buol orders kang signed-in customer
 router.get('/', async (req: Request, res: Response) => {
-  try {
+  try { // filters by customers id
     const orders = await db.order.findMany({
       where: { userId: req.user!.userId },
       include: orderInclude,
-      orderBy: { id: 'desc' },
+      orderBy: { id: 'desc' }, // arrange siya and ang pinakabag o ang una
     });
     res.json(orders.map(serializeOrder));
   } catch (error) {
@@ -118,10 +123,10 @@ router.patch('/:id/cancel', validateResource(orderIdSchema), async (req: Request
       // userId in the filter: customers can only cancel their own orders
       const order = await tx.order.findFirst({ where: { id, userId }, include: orderInclude });
 
-      if (!order) {
+      if (!order) { // kung wara match ang order
         throw new HttpError(404, 'Order not found');
       }
-      if (!CUSTOMER_CANCELLABLE.includes(order.status)) {
+      if (!CUSTOMER_CANCELLABLE.includes(order.status)) { // kung ang status indi pending, di pwede cacel
         throw new HttpError(
           409,
           order.status === 'CANCELLED'

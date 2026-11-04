@@ -26,7 +26,7 @@ app.use(cors({ origin: CLIENT_ORIGIN }));
 app.use(express.json());
 
 app.post("/api/invoices", async (req, res) => {
-  try {
+  try { // basahun ya to ang invoice items kag ang reference number, check kung ara sila kag calculate ya dayun 
     const { lineItems, referenceNumber } = req.body || {};
 
     if (!Array.isArray(lineItems) || lineItems.length === 0) {
@@ -41,6 +41,7 @@ app.post("/api/invoices", async (req, res) => {
       0,
     );
 
+    // send ya ang invoice sa Xendit, pati ang amount, currency kag ang details
     const response = await fetch(XENDIT_INVOICES_URL, {
       method: "POST",
       headers: {
@@ -81,6 +82,7 @@ app.post("/api/invoices", async (req, res) => {
       cards: json.should_exclude_credit_card ? "excluded" : "allowed",
     });
 
+    // balik ka ang invoice id ka Xendit kag payment URL sa frontend
     res.json({ id: json.id, invoiceUrl: json.invoice_url });
   } catch (err) {
     console.error("[gearhub-server] Failed to create invoice:", err);
@@ -88,6 +90,7 @@ app.post("/api/invoices", async (req, res) => {
   }
 });
 
+// Gets the invoice status from Xendit and returns it to the frontend.
 app.get("/api/invoices/:id", async (req, res) => {
   try {
     const response = await fetch(`${XENDIT_INVOICES_URL}/${req.params.id}`, {
@@ -110,7 +113,7 @@ app.get("/api/invoices/:id", async (req, res) => {
 
 app.post("/webhooks/xendit", (req, res) => {
   try {
-    if (XENDIT_CALLBACK_VERIFICATION_TOKEN) {
+    if (XENDIT_CALLBACK_VERIFICATION_TOKEN) { // checks the notif kung ga contain matching token kung hindi reject siya ka server
       const providedToken = req.headers["x-callback-token"];
       if (providedToken !== XENDIT_CALLBACK_VERIFICATION_TOKEN) {
         console.warn("[gearhub-server] Rejected webhook: token mismatch");
@@ -118,7 +121,7 @@ app.post("/webhooks/xendit", (req, res) => {
       }
     }
 
-    console.log(
+    console.log( // logs the invoice status and reference id
       "[gearhub-server] Xendit webhook received:",
       req.body?.status,
       req.body?.external_id,
@@ -130,6 +133,6 @@ app.post("/webhooks/xendit", (req, res) => {
   res.sendStatus(200);
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, () => { // starts the payment server
   console.log(`[gearhub-server] listening on http://localhost:${PORT}`);
 });

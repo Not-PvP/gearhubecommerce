@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodObject, ZodError } from 'zod';
 
-export const validateResource = (schema: ZodObject) =>
+export const validateResource = (schema: ZodObject) => // mag create middleware
   (req: Request, res: Response, next: NextFunction) => {
     try {
       // parse the incoming request against the schema

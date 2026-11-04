@@ -1,3 +1,4 @@
+// mag convert prisma objects to json
 import { Prisma } from '@prisma/client';
 import { ShippingAddress } from './schemas';
 
@@ -27,15 +28,17 @@ export const serializeUser = (user: { id: number; email: string; isAdmin: boolea
   is_admin: Boolean(user.isAdmin),
 });
 
-export const orderInclude = { items: { include: { product: true } } } as const;
+// related abi ang order sa order items, kag ang kada item related to a product
+export const orderInclude = { items: { include: { product: true } } } as const; // tells prsima to fetch related items nd prods along w/ order it can like like name, image chuchu
 
-export type OrderWithItems = Prisma.OrderGetPayload<{ include: typeof orderInclude }>;
+// tells ts its value has the shape of an order returned by prisma w/ the related items
+export type OrderWithItems = Prisma.OrderGetPayload<{ include: typeof orderInclude }>; // type checking
 
-const parseAddress = (raw: string): ShippingAddress | string => {
+const parseAddress = (raw: string): ShippingAddress | string => { // address as text and tries to parse as json
   try {
     return JSON.parse(raw) as ShippingAddress;
   } catch {
-    return raw;
+    return raw; // if not valid, returns orig text
   }
 };
 
@@ -49,7 +52,8 @@ export const serializeOrder = (order: OrderWithItems) => {
   }));
   const subtotal = items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
   const shipping = subtotal > 0 ? SHIPPING_FEE : 0;
-
+  // may compuations because? para ni sa frontend nga idisplay
+  
   return {
     id: String(order.id),
     items,

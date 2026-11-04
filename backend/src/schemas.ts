@@ -4,6 +4,7 @@ const idParamsSchema = z.object({
   id: z.string().regex(/^\d+$/, 'ID must be a numeric string'),
 });
 
+// namean ya muni included sa request
 export const listProductsSchema = z.object({
   query: z.object({
     search: z.string().optional(),

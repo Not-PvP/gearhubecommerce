@@ -124,8 +124,8 @@ function Checkout() {
     }
   };
 
-  const startPollingForPayment = (sessionId: string, orderId: string) => {
-    const deadline = Date.now() + POLL_TIMEOUT_MS;
+  const startPollingForPayment = (sessionId: string, orderId: string) => { // asks the payment service for the invoice status
+    const deadline = Date.now() + POLL_TIMEOUT_MS; // this avoids the app polling Xendit forever
     let settled = false;
 
     pollIntervalRef.current = setInterval(async () => {
@@ -168,13 +168,14 @@ function Checkout() {
     }, POLL_INTERVAL_MS);
   };
 
+  // decide kung paano maka proceed base sa payment method
   const onPlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isAddressComplete || selectedItems.length === 0) return;
+    if (!isAddressComplete || selectedItems.length === 0) return; // check anay kung present tanan
 
     const orderId = `ORD-${Date.now()}`;
 
-    if (paymentMethod === "cod") {
+    if (paymentMethod === "cod") { // kung cod, no need online-payment polling
       finalizeOrder(orderId);
       return;
     }
@@ -201,7 +202,7 @@ function Checkout() {
     setStage("awaiting-payment");
     setErrorMessage("");
 
-    try {
+    try { // for online, asks payment service to create an invoice
       const { id, invoiceUrl } = await createInvoice(
         [
           ...selectedItems.map((item) => ({
@@ -222,8 +223,8 @@ function Checkout() {
         return;
       }
 
-      popup.location.href = invoiceUrl;
-      startPollingForPayment(id, orderId);
+      popup.location.href = invoiceUrl; // opens invoice url in the payment popup
+      startPollingForPayment(id, orderId); // starts polling for the invoice's payment status
     } catch (err) {
       if (!popup.closed) popup.close();
       setErrorMessage(
@@ -235,13 +236,13 @@ function Checkout() {
     }
   };
 
-  const onCancelAwaitingPayment = () => {
+  const onCancelAwaitingPayment = () => { // stops the status polling
     clearPolling();
     if (popupRef.current && !popupRef.current.closed) popupRef.current.close();
     setStage("form");
   };
 
-  const onRetry = () => {
+  const onRetry = () => { // para maka try again checkout
     setErrorMessage("");
     setStage("form");
   };

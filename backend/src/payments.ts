@@ -10,6 +10,7 @@ interface InvoiceInfo {
   amount?: number;
 }
 
+// asks the payment server fro the invoice's status kag amount
 export const verifyXenditPayment = async (invoiceId: string, expectedTotal: number) => {
   let invoice: InvoiceInfo;
   try {
@@ -26,6 +27,7 @@ export const verifyXenditPayment = async (invoiceId: string, expectedTotal: numb
     throw new HttpError(502, "Couldn't reach the payment server to confirm the payment.");
   }
 
+  // rejects and order kung di complete payment or the paid amount doesnt match the total
   if (!invoice.status || !PAID_STATUSES.includes(invoice.status)) {
     throw new HttpError(402, 'Payment has not been completed.');
   }
