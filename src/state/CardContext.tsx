@@ -124,7 +124,7 @@ export function CardProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = useCallback(
+  const login = useCallback( // saves the token and user in app state
     async (email: string, password: string) => startSession(await apiLogin(email, password)),
     [startSession],
   );

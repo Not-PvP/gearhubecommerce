@@ -16,8 +16,8 @@ const isAdminRoute = () => window.location.hash === "#/admin";
 
 function App() {
   const [adminView, setAdminView] = useState(isAdminRoute());
-  const { state } = useCard();
-  const isAdmin = Boolean(state.user?.isAdmin); // check kung admin ang gatry mag log in
+  const { state } = useCard(); // basa na  to sa cardcontext ang user kag jwt token
+  const isAdmin = Boolean(state.user?.isAdmin); // check kung admin ang gatry mag log in teh kung tuod redirect ya to sa admin
 
   useEffect(() => {
     const onHashChange = () => setAdminView(isAdminRoute());

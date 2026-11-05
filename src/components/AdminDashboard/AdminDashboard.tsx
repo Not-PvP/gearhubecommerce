@@ -30,7 +30,7 @@ const availableStatuses = (current: OrderStatus, paymentMethod: Order["paymentMe
 const errorText = (err: unknown, fallback: string) =>
   err instanceof Error ? err.message : fallback;
 
-const AdminDashboard: React.FC = () => {
+const AdminDashboard: React.FC = () => { // create local state
   const { state, reloadProducts, logout, startSession } = useCard();
 
   const [token, setToken] = useState<string | null>(null);
@@ -118,7 +118,7 @@ const AdminDashboard: React.FC = () => {
         fetchLowStock(t), // waits for both to finish
       ]);
       setOrders(orderList); // kung mag succeed both (sa babaw), isave mga returned orders; and
-      setLowStock(lowStockList); // low products in the component's state (local react state)
+      setLowStock(lowStockList); // low stock products in the component's state (local react state)
     } catch (err) {
       setError(errorText(err, "Couldn't load the dashboard."));
     } finally {
@@ -133,7 +133,7 @@ const AdminDashboard: React.FC = () => {
     try {
       const session = await adminLogin(email.trim(), password);
       // share the admin session with the rest of the app so the storefront stays locked
-      await startSession(session);
+      await startSession(session); // saves the token
       setToken(session.token);
       setPassword("");
       await load(session.token);

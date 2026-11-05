@@ -85,7 +85,7 @@ export async function fetchProduct(id: string): Promise<Product> { // one produc
   return toProduct(await request<ApiProduct>(`/api/products/${encodeURIComponent(id)}`)); // puts product id to the endpoint /api/products/12
 }  // converts into the format backend uses // gets the product from the back   // safely formats the ID for a URL
 
-export interface Session {
+export interface Session { // recieves the user and jwt from backend
   user: User;
   token: string;
 }
