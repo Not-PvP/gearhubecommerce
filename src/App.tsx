@@ -17,7 +17,7 @@ const isAdminRoute = () => window.location.hash === "#/admin";
 function App() {
   const [adminView, setAdminView] = useState(isAdminRoute());
   const { state } = useCard();
-  const isAdmin = Boolean(state.user?.isAdmin);
+  const isAdmin = Boolean(state.user?.isAdmin); // check kung admin ang gatry mag log in
 
   useEffect(() => {
     const onHashChange = () => setAdminView(isAdminRoute());

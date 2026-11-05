@@ -21,7 +21,7 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
   // format: 'Bearer <token>'
   const token = authHeader && authHeader.split(' ')[1];
 
-  if (!token) {
+  if (!token) { // if no bearer token
     return res.status(401).json({ error: 'Access denied. No token provided.' });
   }
 
