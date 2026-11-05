@@ -14,6 +14,19 @@ import "./AdminDashboard.css";
 const STATUSES: OrderStatus[] = ["PENDING", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"];
 const LOW_STOCK_THRESHOLD = 5;
 
+const allowedNextStatuses = (current: OrderStatus, paymentMethod: Order["paymentMethod"]): OrderStatus[] => {
+  if (current === "PENDING") {
+    return paymentMethod === "cod" ? ["SHIPPED", "CANCELLED"] : ["PAID", "CANCELLED"];
+  }
+  if (current === "PAID") return ["SHIPPED"];
+  if (current === "SHIPPED") return ["DELIVERED"];
+  return [];
+};
+
+const availableStatuses = (current: OrderStatus, paymentMethod: Order["paymentMethod"]) => {
+  return [current, ...allowedNextStatuses(current, paymentMethod)];
+};
+
 const errorText = (err: unknown, fallback: string) =>
   err instanceof Error ? err.message : fallback;
 
@@ -130,11 +143,11 @@ const AdminDashboard: React.FC = () => {
       setLoggingIn(false);
     }
   };
-
-  useEffect(() => {
-    if (!token && state.user?.isAdmin && state.token) {
+  // kung mag appear admin dashboard, run ya ni after irender
+  useEffect(() => { // detect na ang admin already present in shared state with token
+    if (!token && state.user?.isAdmin && state.token) { // kung true ya tanan set ya to ang token
       setToken(state.token);
-      load(state.token);
+      load(state.token); // start dayun request ka orders kag lowstock products
     }
   }, [token, state.user, state.token, load]);
 
@@ -327,7 +340,7 @@ const AdminDashboard: React.FC = () => {
                                 current === order.id ? null : order.id
                               );
                             }}
-                            disabled={order.status === "CANCELLED" || savingId === order.id}
+                            disabled={order.status === "CANCELLED" || order.status === "DELIVERED" || savingId === order.id}
                             aria-expanded={openStatusId === order.id}
                             aria-haspopup="listbox"
                             aria-label={`Status for order ${order.id}: ${order.status}`}
@@ -353,7 +366,7 @@ const AdminDashboard: React.FC = () => {
                               role="listbox"
                               aria-label={`Change status for order ${order.id}`}
                             >
-                              {STATUSES.map((status) => (
+                              {availableStatuses(order.status, order.paymentMethod).map((status) => (
                                 <button
                                   key={status}
                                   type="button"

@@ -10,8 +10,17 @@ const router = Router();
 
 const LOW_STOCK_THRESHOLD = 5; // 5 or fewer
 
-// requires every route in this router to pass and duha ka ni
-router.use(authenticateToken, requireAdmin);
+const allowedNextStatuses = (status: string, paymentMethod: string | null) => {
+  if (status === 'PENDING') {
+    return paymentMethod === 'cod' ? ['SHIPPED', 'CANCELLED'] : ['PAID', 'CANCELLED'];
+  }
+  if (status === 'PAID') return ['SHIPPED'];
+  if (status === 'SHIPPED') return ['DELIVERED'];
+  return [];
+};
+
+// requires every route in this router to pass ang duha ka ni
+router.use(authenticateToken, requireAdmin); // check kung valid ang token kag kung admin mn gid siya
 
 router.get('/orders', async (_req: Request, res: Response) => {
   try {
@@ -43,10 +52,19 @@ router.patch('/orders/:id/status', validateResource(updateOrderStatusSchema), as
       }
 
       if (nextStatus === 'CANCELLED') { // check if ginatry cancel ka admin ang order
-        if (order.status === 'DELIVERED') { // kung delivered di tana pwede ma cancel
-          throw new HttpError(409, 'A delivered order cannot be cancelled');
+        if (order.status !== 'PENDING') {
+          throw new HttpError(409, 'An order can only be cancelled before it is paid or shipped.');
         }
+      }
 
+      if (
+        nextStatus !== order.status &&
+        !allowedNextStatuses(order.status, order.paymentMethod).includes(nextStatus)
+      ) {
+        throw new HttpError(409, `Invalid order status transition from ${order.status} to ${nextStatus}`);
+      }
+
+      if (nextStatus === 'CANCELLED') {
         // cancelling puts the items back in stock
         for (const item of order.items) {
           if (item.productId != null) {
