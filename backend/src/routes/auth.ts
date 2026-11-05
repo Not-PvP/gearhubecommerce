@@ -11,6 +11,7 @@ const router = Router();
 
 const TOKEN_EXPIRES_IN = '1d';
 
+// may jwt to prove that the user is logged in kag para ma identify karon kung ano nga account gahimo request
 const signToken = (user: { id: number; email: string }) =>
   jwt.sign({ userId: user.id, email: user.email }, getJwtSecret(), { expiresIn: TOKEN_EXPIRES_IN });
 
